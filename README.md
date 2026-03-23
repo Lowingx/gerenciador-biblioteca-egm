@@ -9,7 +9,7 @@ Sistema simples de gestão da biblioteca da escola, feito para ser fácil de ent
 - Mostrar quem está com o livro no momento
 - Interface que funciona bem no tablet ou celular da escola
 
-## Tecnologias que estamos usando
+## Nosso STACK
 - **Backend** → Python + FastAPI (rápido e fácil de aprender)
 - **Frontend** → React + Tailwind CSS (telas bonitas e responsivas)
 - **Banco de dados** → PostgreSQL (produção) ou SQLite (para testar no computador de casa/escola)
