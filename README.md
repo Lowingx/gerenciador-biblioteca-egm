@@ -12,7 +12,7 @@ Sistema simples de gestão da biblioteca da escola, feito para ser fácil de ent
 ## Nosso STACK
 - **Backend** → Python + FastAPI (rápido e fácil de aprender)
 - **Frontend** → React + Tailwind CSS (telas bonitas e responsivas)
-- **Banco de dados** → PostgreSQL (produção) ou SQLite (para testar no computador de casa/escola)
+- **Banco de dados** → PostgreeSQL (produção) ou SQLite (para testar no computador de casa/escola)
 
 ## Como rodar o projeto no seu computador (para iniciantes)
 
