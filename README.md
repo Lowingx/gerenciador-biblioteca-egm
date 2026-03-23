@@ -25,5 +25,5 @@ Sistema simples de gestão da biblioteca da escola, feito para ser fácil de ent
 Abra o terminal (Prompt de Comando ou PowerShell no Windows / Terminal no Mac/Linux) e rode:
 
 ```bash
-git clone https://github.com/SEU-USUARIO/biblioteca-escolar.git
+git clone https://github.com/Lowingx/gerenciador-biblioteca-egm.git
 cd biblioteca-escolar
