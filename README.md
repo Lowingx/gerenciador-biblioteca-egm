@@ -30,7 +30,7 @@ cd biblioteca-escolar
 ```
 ## Estrutura das pastas (onde fica cada coisa)
 
-``
+```
 gerenciador-biblioteca-egm/
 ├── backend/          # Servidor (FastAPI, banco de dados)
 │   ├── main.py       # Arquivo principal
