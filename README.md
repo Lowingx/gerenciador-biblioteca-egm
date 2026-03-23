@@ -27,3 +27,16 @@ Abra o terminal (Prompt de Comando ou PowerShell no Windows / Terminal no Mac/Li
 ```bash
 git clone https://github.com/Lowingx/gerenciador-biblioteca-egm.git
 cd biblioteca-escolar
+```
+
+## Estrutura das pastas (onde fica cada coisa)
+gerenciador-biblioteca-egm/
+├── backend/          # Servidor (FastAPI, banco de dados)
+│   ├── main.py       # Arquivo principal
+│   ├── requirements.txt
+│   └── ...
+├── frontend/         # Telas (React)
+│   ├── src/
+│   ├── public/
+│   └── package.json
+└── README.md         # Este arquivo
