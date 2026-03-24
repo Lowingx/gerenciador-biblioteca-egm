@@ -1,0 +1,29 @@
+import './index.css'
+
+function App() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="text-center max-w-3xl px-4">
+        <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500 mb-8 drop-shadow-xl">
+          Gerenciador de Biblioteca Escolar
+        </h1>
+
+        <p className="text-xl md:text-2xl text-gray-700 mb-10 leading-relaxed">
+          Sistema simples para controle de livros, empréstimos e devoluções.  
+          Feito para escola, com foco em leitura e organização.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-6 justify-center">
+          <button className="px-10 py-5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+            Entrar com Matrícula
+          </button>
+          <button className="px-10 py-5 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+            Ver Catálogo
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default App
