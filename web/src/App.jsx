@@ -1,29 +1,44 @@
-import './index.css'
+import { Card } from './components/Card';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="text-center max-w-3xl px-4">
-        <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500 mb-8 drop-shadow-xl">
-          Gerenciador de Biblioteca Escolar
-        </h1>
+    <div className="min-h-screen bg-egm-bg p-6 flex gap-6 font-sans text-slate-800">
+      
+      {/* Sidebar Esquerda (Página 1 e 3) */}
+      <aside className="w-20 md:w-64 flex flex-col gap-4">
+        <Card className="flex-1">
+          <div className="h-10 w-10 bg-slate-400 rounded-full mb-10" />
+          <div className="space-y-6">
+            <div className="h-4 bg-slate-300 rounded w-3/4" />
+            <div className="h-4 bg-slate-300 rounded w-1/2" />
+            <div className="h-4 bg-slate-300 rounded w-2/3" />
+          </div>
+        </Card>
+      </aside>
 
-        <p className="text-xl md:text-2xl text-gray-700 mb-10 leading-relaxed">
-          Sistema simples para controle de livros, empréstimos e devoluções.  
-          Feito para escola, com foco em leitura e organização.
-        </p>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col gap-6">
+        
+        {/* Header Superior */}
+        <Card className="h-20 flex items-center justify-between">
+          <div className="h-6 bg-slate-300 rounded w-48" />
+          <div className="h-10 w-10 bg-slate-400 rounded-full" />
+        </Card>
 
-        <div className="flex flex-col sm:flex-row gap-6 justify-center">
-          <button className="px-10 py-5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
-            Entrar com Matrícula
-          </button>
-          <button className="px-10 py-5 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
-            Ver Catálogo
-          </button>
+        {/* Grid do Dashboard (Page 1) */}
+        <div className="flex flex-1 gap-6">
+          <Card className="flex-[3]">
+             <h2 className="font-bold text-xl text-slate-600">Visão Geral</h2>
+          </Card>
+
+          <div className="flex-1 flex flex-col gap-6">
+            <Card className="h-48" />
+            <Card className="flex-1" />
+          </div>
         </div>
-      </div>
+      </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
