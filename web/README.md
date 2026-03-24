@@ -1,4 +1,4 @@
-# 🎨Frontend - EGM Lib (Single Page Application)
+# Frontend - EGM Lib (Single Page Application)
 
 Core da interface do usuário focado em performance e reatividade.
 
