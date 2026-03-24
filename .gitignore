@@ -1,20 +1,8 @@
-# Ambientes Virtuais (Python)
 venv/
-.venv/
-env/
-__pycache__/
-*.pyc
-
-# Dependências de Node (Frontend)
 node_modules/
 dist/
 .env
-
-# Arquivos de Sistema
+__pycache__/
+*.pyc
 .DS_Store
 Thumbs.db
-*.log
-
-# IDEs
-.vscode/
-.idea/
