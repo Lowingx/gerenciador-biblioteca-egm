@@ -1,20 +1,21 @@
-# Documentação Técnica - EGM Lib
+# 📁 Documentação Técnica - GBE
 
-Repositório central de artefatos de design, modelagem de sistemas e documentação acadêmica.
+Esta pasta contém todos os artefatos de design e planejamento do sistema.
 
-## 🛠️ Stack de Documentação
-* **Modelagem de Dados:** [Draw.io](https://app.diagrams.net/) / [MySQL Workbench](https://www.mysql.com/products/workbench/)
-* **Diagramas de Fluxo:** [Mermaid.js](https://mermaid.js.org/)
-* **Prototipagem UI/UX:** [Figma](https://www.figma.com/)
-* **Especificação de API:** [OpenAPI 3.0](https://swagger.io/specification/)
+## 📍 Sumário
 
-## 📂 Organização do Diretório
-* `/diagrams`: Modelagem Entidade-Relacionamento (DER), Diagramas de Classe e de Sequência.
-* `/hardware`: Esquemas de montagem (Wiring) e especificações de componentes.
-* `/reports`: Relatórios de Sprint, documentos ABNT e atas de reunião.
-* `/api`: Collections do Postman/Insomnia e contratos de interface.
+### 1. [Arquitetura e Dados](arquitetura.md)
+- Diagrama de Containers (C4 Lite).
+- Modelo Entidade-Relacionamento (ER).
 
-## 📐 Padrões Adotados
-1. **Versionamento:** Alterações em diagramas devem acompanhar a versão da Milestone correspondente.
-2. **Formato:** Preferência por arquivos editáveis (.drawio, .fig) acompanhados de uma exportação em alta resolução (.png ou .pdf).
-3. **Linguagem:** Termos técnicos em Inglês, descrições de negócio em Português.
+### 2. [Gestão de Projeto](backlog.md)
+- Backlog de User Stories.
+- Definição de Sprints (1 a 4).
+- Arquivo bruto: [backlog1.csv](backlog1.csv).
+
+### 3. [Fluxos de Negócio](fluxos/)
+- [**Empréstimo**](fluxos/emprestimo.md): Validações de multa, status e reserva.
+- [**Devolução**](fluxos/devolucao.md): Regras de baixa e cálculo de atraso.
+
+---
+_Nota: Todos os diagramas foram gerados via Mermaid/Draw.io e as imagens originais estão armazenadas nesta pasta._
