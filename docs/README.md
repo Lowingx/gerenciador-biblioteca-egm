@@ -18,4 +18,4 @@ Esta pasta contém todos os artefatos de design e planejamento do sistema.
 - [**Devolução**](fluxos/devolucao.md): Regras de baixa e cálculo de atraso.
 
 ---
-_Nota: Todos os diagramas foram gerados via Mermaid/Draw.io e as imagens originais estão armazenadas nesta pasta._
+_Nota: Todos os diagramas foram feitos via Mermaid/Draw.io e as imagens originais estão armazenadas nesta pasta._
