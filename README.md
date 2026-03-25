@@ -12,7 +12,6 @@ O **EGM Lib** une gestão bibliotecária com **IoT**. O diferencial é um sensor
 ## 🏗️ Estrutura do Repositório
 * **web/**: Frontend em React + Tailwind.
 * **backend/**: API em Python (FastAPI).
-* **hardware/**: Código para o sensor (ESP32/Arduino).
 * **docs/**: Documentação técnica e ABNT.
 
 ## 🛠️ Instalação Rápida
