@@ -1,0 +1,11 @@
+Sprint,ID,User Story (Como ... eu quero ...),Prioridade,Status
+1,PB-01,"Como bibliotecário, quero cadastrar novos livros (título, ISBN, autores, ano, editora, categoria, quantidade)",Must,Liberado
+1,PB-02,"Como usuário, quero buscar livros por título, autor, ISBN ou categoria",Must,Liberado
+1,PB-03,"Como administrador, quero cadastrar usuários (alunos e professores) com RA, nome, email e senha",Must,Liberado
+2,PB-04,"Como usuário autenticado, quero realizar empréstimo de livro",Must,Pendente
+2,PB-05,"Como bibliotecário, quero registrar devolução de livro",Must,Pendente
+2,PB-08,"Como sistema, devo validar regras (exemplar disponível + usuário sem pendências)",Must,Pendente
+3,PB-06,"Como usuário, quero fazer login com RA e senha (JWT)",Must,Pendente
+4,PB-07,"Como bibliotecário, quero visualizar dashboard básico (livros totais, emprestados, atrasados)",Should,Pendente
+4,PB-09,"Como usuário, quero consultar meu histórico de empréstimos",Should,Pendente
+5,PB-10,"Como equipe, quero refatorar, testar e preparar apresentação final do MVP",Must,Pendente
