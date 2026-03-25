@@ -1,4 +1,4 @@
-# 📚 Gerenciador de Biblioteca EGM + Smart Noise Sensor
+# 📚 Gerenciador de Biblioteca EGM
 > Sistema inteligente para gestão de acervo e monitoramento acústico ambiental.
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/Lowingx/gerenciador-biblioteca-egm?style=for-the-badge&color=blue)
