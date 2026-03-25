@@ -39,4 +39,4 @@ npm run dev
 3. **Discord**: Acompanhe o canal #github-issues-prs para atualizações.
 
 ---
-Desenvolvido pela Squad EGM. 🚀
+Desenvolvido pelo Squad Library Nexus
