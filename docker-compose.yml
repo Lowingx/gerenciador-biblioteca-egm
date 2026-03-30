@@ -9,8 +9,6 @@ services:
       POSTGRES_DB: gbe_db
       POSTGRES_USER: gbe_user
       POSTGRES_PASSWORD: gbe_pass_123
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -21,18 +19,15 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: gbe-backend
     restart: unless-stopped
-    ports:
-      - "8000:8000"
     volumes:
       - ./backend:/app
     environment:
       - DATABASE_URL=postgresql+psycopg2://gbe_user:gbe_pass_123@db:5432/gbe_db
       - ENVIRONMENT=development
-      - SECRET_KEY=super-secret-key-change-in-production
     depends_on:
       db:
         condition: service_healthy
@@ -40,17 +35,15 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: gbe-frontend
     restart: unless-stopped
-    ports:
-      - "5173:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=http://backend:8000
     depends_on:
       - backend
     command: npm run dev -- --host
