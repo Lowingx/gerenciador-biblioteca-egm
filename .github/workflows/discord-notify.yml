@@ -13,8 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v42
+
       - name: Frontend Notification
-        if: contains(github.event.head_commit.modified, 'frontend/') || contains(github.event.pull_request.title, 'frontend')
+        if: contains(steps.changed-files.outputs.all_changed_files, 'frontend/') || contains(github.event.pull_request.title, 'frontend')
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_FRONTEND_WEBHOOK }}
@@ -22,7 +26,7 @@ jobs:
           args: '🚀 **Frontend** alterado\nBranch: ${{ github.ref_name }}\nAutor: ${{ github.actor }}'
 
       - name: Backend Notification
-        if: contains(github.event.head_commit.modified, 'backend/') || contains(github.event.pull_request.title, 'backend')
+        if: contains(steps.changed-files.outputs.all_changed_files, 'backend/') || contains(github.event.pull_request.title, 'backend')
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_BACKEND_WEBHOOK }}
