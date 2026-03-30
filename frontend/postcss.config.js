@@ -4,3 +4,4 @@ export default {
   },
 };
 // build trigger
+// build trigger: texto puro verificado
