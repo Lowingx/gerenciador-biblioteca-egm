@@ -12,31 +12,45 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v42
 
       - name: Frontend Notification
-        if: contains(steps.changed-files.outputs.all_changed_files, 'frontend/') || contains(github.event.pull_request.title, 'frontend')
-        uses: Ilshidur/action-discord@master
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_FRONTEND_WEBHOOK }}
+        if: contains(steps.changed-files.outputs.all_changed_files, 'frontend/')
+        uses: sarisia/actions-status-discord@v1
         with:
-          args: '🚀 **Frontend** alterado\nBranch: ${{ github.ref_name }}\nAutor: ${{ github.actor }}'
+          webhook_url: ${{ secrets.DISCORD_FRONTEND_WEBHOOK }}
+          title: "🚀 Frontend Alterado"
+          description: |
+            Branch: `${{ github.ref_name }}`
+            Autor: `${{ github.actor }}`
+            Commit: ${{ github.event.head_commit.message }}
 
       - name: Backend Notification
-        if: contains(steps.changed-files.outputs.all_changed_files, 'backend/') || contains(github.event.pull_request.title, 'backend')
-        uses: Ilshidur/action-discord@master
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_BACKEND_WEBHOOK }}
+        if: contains(steps.changed-files.outputs.all_changed_files, 'backend/')
+        uses: sarisia/actions-status-discord@v1
         with:
-          args: '🔧 **Backend** alterado\nBranch: ${{ github.ref_name }}\nAutor: ${{ github.actor }}'
+          webhook_url: ${{ secrets.DISCORD_BACKEND_WEBHOOK }}
+          title: "🔧 Backend Alterado"
+          description: |
+            Branch: `${{ github.ref_name }}`
+            Autor: `${{ github.actor }}`
+            Commit: ${{ github.event.head_commit.message }}
 
       - name: PR Notification
         if: github.event_name == 'pull_request'
-        uses: Ilshidur/action-discord@master
-        env:
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook_url: ${{ secrets.DISCORD_PR_WEBHOOK }}
+          title: "📋 Pull Request ${{ github.event.action }}"
+          description: |
+            Título: **${{ github.event.pull_request.title }}**
+            Autor: `${{ github.event.pull_request.user.login }}`
+            Link: ${{ github.event.pull_request.html_url }}
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_PR_WEBHOOK }}
         with:
           args: '📋 Pull Request ${{ github.event.action }}\nTítulo: ${{ github.event.pull_request.title }}\nAutor: ${{ github.event.pull_request.user.login }}'
