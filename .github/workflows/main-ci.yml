@@ -20,7 +20,6 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
           pytest || echo "Sem testes"
-
   frontend-check:
     runs-on: ubuntu-latest
     steps:
@@ -29,8 +28,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Install Deps
+        run: |
+          cd frontend
+          npm install  # Isso garante que o Tailwind v4 seja baixado no GitHub
       - name: Frontend Build
         run: |
           cd frontend
-          npm install
           npm run build
