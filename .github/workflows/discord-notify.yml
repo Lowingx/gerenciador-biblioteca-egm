@@ -1,0 +1,38 @@
+name: Discord Notifications
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, closed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Frontend Notification
+        if: contains(github.event.head_commit.modified, 'frontend/') || contains(github.event.pull_request.title, 'frontend')
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_FRONTEND_WEBHOOK }}
+        with:
+          args: '🚀 **Frontend** alterado\nBranch: ${{ github.ref_name }}\nAutor: ${{ github.actor }}'
+
+      - name: Backend Notification
+        if: contains(github.event.head_commit.modified, 'backend/') || contains(github.event.pull_request.title, 'backend')
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_BACKEND_WEBHOOK }}
+        with:
+          args: '🔧 **Backend** alterado\nBranch: ${{ github.ref_name }}\nAutor: ${{ github.actor }}'
+
+      - name: PR Notification
+        if: github.event_name == 'pull_request'
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_PR_WEBHOOK }}
+        with:
+          args: '📋 Pull Request ${{ github.event.action }}\nTítulo: ${{ github.event.pull_request.title }}\nAutor: ${{ github.event.pull_request.user.login }}'
