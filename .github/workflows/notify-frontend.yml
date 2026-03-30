@@ -1,0 +1,26 @@
+name: Notify Frontend
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Send notification to Frontend channel
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_FRONTEND_WEBHOOK }}
+        with:
+          args: '🚀 **Frontend** alterado\n**Branch:** ${{ github.ref_name }}\n**Commit:** ${{ github.sha }}\n**Autor:** ${{ github.actor }}\n**Status:** ${{ job.status }}'

@@ -1,0 +1,18 @@
+name: Notify Pull Requests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reviewed, closed, ready_for_review]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Send notification to PR channel
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_PR_WEBHOOK }}
+        with:
+          args: '📋 **Pull Request** ${{ github.event.action }}\n**Título:** ${{ github.event.pull_request.title }}\n**Autor:** ${{ github.event.pull_request.user.login }}\n**Link:** ${{ github.event.pull_request.html_url }}'
