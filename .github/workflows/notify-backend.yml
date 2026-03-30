@@ -2,25 +2,18 @@ name: Notify Backend
 
 on:
   push:
-    branches: [ main, develop ]
-    paths:
-      - 'backend/**'
+    paths: ['backend/**']
   pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'backend/**'
+    paths: ['backend/**']
 
 jobs:
   notify:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v4
-
-      - name: Send notification to Backend channel
+      - name: Discord Notification
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_BACKEND_WEBHOOK }}
         with:
-          args: '🔧 **Backend** alterado\n**Branch:** ${{ github.ref_name }}\n**Commit:** ${{ github.sha }}\n**Autor:** ${{ github.actor }}\n**Status:** ${{ job.status }}'
+          args: '🔧 **Backend** foi alterado\nBranch: ${{ github.ref_name }}\nAutor: ${{ github.actor }}'
