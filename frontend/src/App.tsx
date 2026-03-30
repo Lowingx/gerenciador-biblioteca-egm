@@ -1,7 +1,7 @@
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Card } from '@/components/ui/card';
-import Login from "./pages/Login";
+import Login from "./pages/login";
 
 export default function App() {
   const isLoggedOut = true;
