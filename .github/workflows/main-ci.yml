@@ -1,4 +1,4 @@
-name: 🚀 Main Pipeline
+name: Main Pipeline
 
 on:
   push:
@@ -31,9 +31,8 @@ jobs:
       - name: Install Deps
         run: |
           cd frontend
-          npm install  # Isso garante que o Tailwind v4 seja baixado no GitHub
+          npm install  
       - name: Frontend Build
         run: |
           cd frontend
           npm run build
-
