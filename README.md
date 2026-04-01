@@ -41,4 +41,4 @@
 
 Documentação Adicional
 
-> Consulte a pasta /docs para visualizar o Modelo de Entidade-Relacionamento (DER), o backlog das Sprints e os fluxogramas de processosaaa.
+> Consulte a pasta /docs para visualizar o Modelo de Entidade-Relacionamento (DER), o backlog das Sprints e os fluxogramas de processos.
