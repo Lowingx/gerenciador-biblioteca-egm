@@ -1,4 +1,4 @@
-name: GBE - Pull Request Command Center
+name: GBE - Centro de Comando de Pull Requests
 
 on:
   pull_request:
