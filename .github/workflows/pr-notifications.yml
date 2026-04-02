@@ -1,0 +1,79 @@
+name: GBE - Pull Request Command Center
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, review_requested, synchronize, closed]
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  pr-notifications:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar notificações de PR
+        uses: actions/github-script@v7
+        env:
+          DISCORD_PR: ${{ secrets.DISCORD_PR }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const action = context.payload.action;
+            const sender = context.payload.sender.login;
+
+            let title = '';
+            let emoji = '';
+            let color = 0x3498db;
+
+            if (action === 'opened') { title = `Novo PR #${pr.number}`; emoji = '🔀'; }
+            else if (action === 'ready_for_review') { title = `PR Pronto para Review #${pr.number}`; emoji = '✅'; }
+            else if (action === 'review_requested') { title = `Review Solicitado #${pr.number}`; emoji = '📨'; }
+            else if (action === 'synchronize') { title = `PR Atualizado #${pr.number}`; emoji = '♻️'; }
+            else if (action === 'closed') {
+              if (pr.merged) { title = `PR Merged #${pr.number}`; emoji = '🎉'; color = 0x2ecc71; }
+              else { title = `PR Fechado #${pr.number}`; emoji = '❌'; color = 0xe74c3c; }
+            }
+
+            const isDraft = pr.draft ? ' 📝 (Draft)' : '';
+            const labels = pr.labels.length ? pr.labels.map(l => `\`${l.name}\``).join(' ') : 'Nenhuma';
+            const reviewers = pr.requested_reviewers.length 
+              ? pr.requested_reviewers.map(r => `@${r.login}`).join(', ') 
+              : 'Ninguém';
+
+            const safeDescription = pr.title.length > 250 
+              ? pr.title.substring(0, 247) + '...' 
+              : pr.title;
+
+            const embed = {
+              title: `${emoji} ${title}${isDraft}`,
+              url: pr.html_url,
+              color: color,
+              description: safeDescription,
+              fields: [
+                { name: "👤 Autor", value: `@${sender}`, inline: true },
+                { name: "🌿 Branch", value: `\`${pr.head.ref}\` → \`${pr.base.ref}\``, inline: true },
+                { name: "🏷️ Labels", value: labels, inline: true },
+                { name: "🔍 Reviewers", value: reviewers, inline: true }
+              ],
+              footer: { text: `GBE - PR Center` },
+              timestamp: new Date().toISOString()
+            };
+
+            try {
+              const res = await fetch(process.env.DISCORD_PR, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ embeds: [embed] })
+              });
+
+              const responseText = await res.text();
+              if (!res.ok) {
+                console.error(`Discord Erro Detalhado: ${responseText}`);
+                throw new Error(`HTTP ${res.status}`);
+              }
+              console.log(`✅ PR Notification enviada: ${action} #${pr.number}`);
+            } catch (err) {
+              console.error(`❌ Falha ao enviar PR notification: ${err.message}`);
+            }
