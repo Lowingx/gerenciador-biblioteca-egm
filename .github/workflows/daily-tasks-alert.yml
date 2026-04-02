@@ -64,7 +64,7 @@ jobs:
                     name: `🔥 Urgente (${staleTasks.length} stale)`,
                     value: staleTasks.length 
                       ? staleTasks.slice(0, 6).map(i => `• [#${i.number}](${i.html_url}) ${i.title}`).join('\n')
-                      : "✅ Sem tarefas paradas. O time tá voando!",
+                      : "✅ Sem tarefas paradas.",
                     inline: false
                   },
                   {
@@ -80,11 +80,12 @@ jobs:
               };
 
               try {
-                await fetch(cat.webhook, {
+                const res = await fetch(cat.webhook, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ embeds: [embed] })
                 });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 console.log(`✅ Alerta enviado para ${cat.name}`);
               } catch (err) {
                 console.error(`❌ Falha ao enviar para ${cat.name}: ${err.message}`);
