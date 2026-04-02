@@ -12,7 +12,7 @@ jobs:
   pr-notifications:
     runs-on: ubuntu-latest
     steps:
-      - name: Enviar notificações de PR
+      - name: Enviar notificações de PR com menção real
         uses: actions/github-script@v7
         env:
           DISCORD_PR: ${{ secrets.DISCORD_PR }}
@@ -22,6 +22,14 @@ jobs:
             const pr = context.payload.pull_request;
             const action = context.payload.action;
             const sender = context.payload.sender.login;
+
+            const discordMap = {
+              "Lowingx": "1416271217727377540",
+              "gdTech1": "1416271217727377540",
+              "IcaroLuizz": "693541367233773608"
+              "mig1z": "783069888041975898"
+              "XxXCrossFakeXxX": "609040036863803415"
+            };
 
             let title = '';
             let emoji = '';
@@ -38,9 +46,20 @@ jobs:
 
             const isDraft = pr.draft ? ' 📝 (Draft)' : '';
             const labels = pr.labels.length ? pr.labels.map(l => `\`${l.name}\``).join(' ') : 'Nenhuma';
-            const reviewers = pr.requested_reviewers.length 
-              ? pr.requested_reviewers.map(r => `@${r.login}`).join(', ') 
-              : 'Ninguém';
+
+            let reviewersMention = 'Ninguém';
+            let rawMentions = '';
+
+            if (pr.requested_reviewers && pr.requested_reviewers.length > 0) {
+              const mentionArray = pr.requested_reviewers.map(r => {
+                const id = discordMap[r.login];
+                return id ? `<@${id}>` : `@${r.login}`;
+              });
+              reviewersMention = mentionArray.join(', ');
+              if (action === 'review_requested') {
+                rawMentions = `🔔 **Atenção Reviewers:** ${reviewersMention}`;
+              }
+            }
 
             const safeDescription = pr.title.length > 250 
               ? pr.title.substring(0, 247) + '...' 
@@ -55,7 +74,7 @@ jobs:
                 { name: "👤 Autor", value: `@${sender}`, inline: true },
                 { name: "🌿 Branch", value: `\`${pr.head.ref}\` → \`${pr.base.ref}\``, inline: true },
                 { name: "🏷️ Labels", value: labels, inline: true },
-                { name: "🔍 Reviewers", value: reviewers, inline: true }
+                { name: "🔍 Reviewers", value: reviewersMention, inline: true }
               ],
               footer: { text: `GBE - PR Center` },
               timestamp: new Date().toISOString()
@@ -65,7 +84,10 @@ jobs:
               const res = await fetch(process.env.DISCORD_PR, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ embeds: [embed] })
+                body: JSON.stringify({ 
+                  content: rawMentions,
+                  embeds: [embed] 
+                })
               });
 
               const responseText = await res.text();
