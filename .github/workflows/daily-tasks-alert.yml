@@ -27,66 +27,63 @@ jobs:
             const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
             const { data: issues } = await github.rest.issues.listForRepo({
-              owner, repo, state: 'open', per_page: 100
+              owner, repo, state: 'open', per_page: 50, sort: 'updated'
             });
 
             const realIssues = issues.filter(i => !i.pull_request);
-            console.log(`🔎 Total de Issues abertas encontradas: ${realIssues.length}`);
 
             const categories = [
-              { name: "Frontend Interface", regex: /front|interface|ui|ux|css|react/i, webhook: process.env.DISCORD_FRONTEND, color: 0x3498db },
-              { name: "Backend Core",       regex: /back|core|api|server|fastapi|python/i, webhook: process.env.DISCORD_BACKEND, color: 0x2ecc71 },
-              { name: "Banco de Dados",     regex: /banco|db|dados|database|sql|postgres/i, webhook: process.env.DISCORD_BANCO,   color: 0x9b59b6 }
+              { name: "Frontend Interface", regex: /front|interface|ui|ux|css|react/i, webhook: process.env.DISCORD_FRONTEND, color: 0x3498db, emoji: "🎨" },
+              { name: "Backend Core",       regex: /back|core|api|server|fastapi|python/i, webhook: process.env.DISCORD_BACKEND, color: 0x2ecc71, emoji: "⚙️" },
+              { name: "Banco de Dados",     regex: /banco|db|dados|database|sql|postgres/i, webhook: process.env.DISCORD_BANCO,   color: 0x9b59b6, emoji: "🗄️" }
             ];
 
+            const formatTasks = (tasks) => {
+              if (tasks.length === 0) return "✅ *Tudo limpo por aqui!*";
+              return tasks.slice(0, 5).map(i => {
+                // Pega os primeiros 100 caracteres da descrição e remove quebras de linha extras
+                const desc = i.body ? i.body.replace(/[\r\n]+/g, ' ').substring(0, 100).trim() + "..." : "Sem descrição.";
+                return `🔹 **[#${i.number}](${i.html_url}) ${i.title}**\n> 📝 ${desc}`;
+              }).join('\n\n');
+            };
+
             for (const cat of categories) {
-              if (!cat.webhook) {
-                console.log(`⚠️ Webhook para ${cat.name} não configurado nos Secrets.`);
-                continue;
-              }
+              if (!cat.webhook) continue;
 
-              const catTasks = realIssues.filter(i => i.labels.some(l => {
-                const match = l.name.match(cat.regex);
-                if (match) console.log(`✅ Issue #${i.number} combinou com ${cat.name} via label [${l.name}]`);
-                return match;
-              }));
-
-              if (catTasks.length === 0) {
-                console.log(`ℹ️ Nenhuma tarefa encontrada para ${cat.name}`);
-                continue;
-              }
+              const catTasks = realIssues.filter(i => i.labels.some(l => l.name.match(cat.regex)));
+              if (catTasks.length === 0) continue;
 
               const staleTasks = catTasks.filter(i => new Date(i.updated_at) < sevenDaysAgo);
               const activeTasks = catTasks.filter(i => new Date(i.updated_at) >= sevenDaysAgo);
 
               const embed = {
-                title: `🚀 Daily Report: ${cat.name}`,
+                title: `${cat.emoji} Report Diário: ${cat.name}`,
                 color: cat.color,
+                description: `Resumo das atividades pendentes para o time de ${cat.name}.`,
                 fields: [
                   {
-                    name: `🔥 Urgente (${staleTasks.length} stale)`,
-                    value: staleTasks.length ? staleTasks.slice(0, 6).map(i => `• [#${i.number}](${i.html_url}) ${i.title}`).join('\n') : "✅ Tudo em movimento!",
+                    name: `⚠️ URGENTE (Parado há +7 dias)`,
+                    value: formatTasks(staleTasks),
                     inline: false
                   },
                   {
-                    name: `🛠️ Em andamento (${activeTasks.length})`,
-                    value: activeTasks.length ? activeTasks.slice(0, 6).map(i => `• [#${i.number}](${i.html_url}) ${i.title}`).join('\n') : "Sem tarefas ativas.",
+                    name: `🕒 EM ANDAMENTO`,
+                    value: formatTasks(activeTasks),
                     inline: false
                   }
                 ],
-                footer: { text: `Total: ${catTasks.length} abertas` },
+                footer: { text: `Engine EGM • ${catTasks.length} tarefas no total` },
                 timestamp: new Date().toISOString()
               };
 
               try {
-                const res = await fetch(cat.webhook, {
+                await fetch(cat.webhook, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ embeds: [embed] })
                 });
-                if (res.ok) console.log(`🚀 Enviado com sucesso para ${cat.name}!`);
-                else console.log(`❌ Erro no Discord para ${cat.name}: ${res.status}`);
+                console.log(`✅ Alerta estilizado enviado para ${cat.name}`);
               } catch (err) {
-                console.error(`❌ Falha no fetch: ${err.message}`);
+                console.error(`❌ Erro: ${err.message}`);
               }
             }
