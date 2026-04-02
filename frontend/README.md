@@ -1,21 +1,43 @@
-# Next.js template
+# Gerenciador de Biblioteca Escolar
 
-This is a Next.js template with shadcn/ui.
+Template baseado em **Next.js** com **shadcn/ui**.
 
-## Adding components
 
-To add components to your app, run the following command:
+### Sobre o Projeto
 
-```bash
-npx shadcn@latest add button
-```
+Este projeto é um sistema para gerenciamento de biblioteca escolar desenvolvido com Next.js e a biblioteca de componentes shadcn/ui.
 
-This will place the ui components in the `components` directory.
+---
 
-## Using components
+### Adicionando Componentes
 
-To use the components in your app, import them as follows:
+Para adicionar novos componentes do shadcn/ui ao seu projeto, execute o seguinte comando:
 
-```tsx
-import { Button } from "@/components/ui/button";
-```
+bash
+
+npx shadcn@latest add nome-do-componente
+
+### Exemplo:
+Bashnpx shadcn@latest add button
+Isso irá adicionar o componente na pasta components/ui/.
+
+- Isso irá adicionar o componente na pasta components/ui/.
+
+### Como Usar os Componentes
+Para utilizar os componentes no seu aplicativo, importe-os da seguinte forma:
+tsximport { Button } from "@/components/ui/button"
+
+---
+
+### Estrutura de Pastas Recomendada
+Bashsrc/
+
+├── app/                 # Páginas e rotas 
+
+├── components/
+
+│   └── ui/              # Componentes do shadcn/ui
+
+├── lib/                 # Utilitários e configurações
+
+└── hooks/               # Hooks personalizados
