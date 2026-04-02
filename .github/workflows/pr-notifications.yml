@@ -24,7 +24,7 @@ jobs:
             const sender = context.payload.sender.login;
 
             const discordMap = {
-              "Lowingx": "1416271217727377540",
+              "Lowingx": "705925658861371394",
               "gdTech1": "1416271217727377540",
               "IcaroLuizz": "693541367233773608",
               "mig1z": "783069888041975898",
