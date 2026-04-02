@@ -1,0 +1,124 @@
+name: GBE - Dashboard Semanal de Métricas
+
+on:
+  schedule:
+    - cron: '0 12 * * 1'
+  workflow_dispatch:
+
+jobs:
+  weekly-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📊 Gerar Dashboard Semanal v5.1 (EGM Edition)
+        uses: actions/github-script@v7
+        env:
+          DISCORD_WEBHOOK_METRICS: ${{ secrets.DISCORD_WEBHOOK_METRICS }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = 'Lowingx';
+            const repo = 'gerenciador-biblioteca-egm';
+            const now = new Date();
+            const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const tenDaysAgo = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000);
+
+            const issues = [];
+            let page = 1;
+            let hasMore = true;
+            while (hasMore && page <= 5) {
+              const { data } = await github.rest.issues.listForRepo({
+                owner, repo, state: 'all', per_page: 100, page,
+                sort: 'updated', direction: 'desc'
+              });
+              issues.push(...data);
+              hasMore = data.length === 100;
+              page++;
+            }
+
+            const pulls = [];
+            page = 1;
+            hasMore = true;
+            while (hasMore && page <= 3) {
+              const { data } = await github.rest.pulls.list({
+                owner, repo, state: 'all', per_page: 100, page,
+                sort: 'updated', direction: 'desc'
+              });
+              pulls.push(...data);
+              hasMore = data.length === 100;
+              page++;
+            }
+
+            const realIssues = issues.filter(i => !i.pull_request);
+            const issuesCreated = realIssues.filter(i => new Date(i.created_at) > oneWeekAgo);
+            const issuesClosed = realIssues.filter(i => i.closed_at && new Date(i.closed_at) > oneWeekAgo);
+            const prsMerged = pulls.filter(p => p.merged_at && new Date(p.merged_at) > oneWeekAgo);
+
+            const openIssues = realIssues.filter(i => i.state === 'open').length;
+            const staleIssues = realIssues.filter(i => i.state === 'open' && new Date(i.updated_at) < tenDaysAgo).length;
+            const completionRate = issuesCreated.length > 0 
+              ? Math.round((issuesClosed.length / issuesCreated.length) * 100) 
+              : 0;
+
+            const contributors = {};
+            issuesClosed.forEach(i => {
+              const login = i.assignee?.login || i.user?.login || 'Sem assignee';
+              contributors[login] = (contributors[login] || 0) + 1;
+            });
+            prsMerged.forEach(p => {
+              const login = p.user.login;
+              contributors[login] = (contributors[login] || 0) + 1;
+            });
+
+            const leaderboard = Object.entries(contributors)
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 5)
+              .map(([name, count], i) => 
+                `${['🥇', '🥈', '🥉', '🏅', '🎖️'][i] || '⭐'} **${name}**: ${count} contribuições`
+              )
+              .join('\n') || 'Nenhuma contribuição registrada esta semana...';
+
+            const embed = {
+              title: "📊 GBE - Dashboard Semanal",
+              url: `https://github.com/${owner}/${repo}`,
+              color: 0x2ea44f,
+              description: `Resumo de produtividade • Semana de ${now.toLocaleDateString('pt-BR')}`,
+              fields: [
+                { 
+                  name: "📈 Atividade", 
+                  value: `🆕 **${issuesCreated.length}** criadas\n✅ **${issuesClosed.length}** resolvidas\n🔀 **${prsMerged.length}** PRs merged\n🎯 **${completionRate}%** taxa de entrega`, 
+                  inline: true 
+                },
+                { 
+                  name: "⚠️ Saúde do Projeto", 
+                  value: `📌 **${openIssues}** issues abertas\n⏳ **${staleIssues}** stale tasks (>10 dias)`, 
+                  inline: true 
+                },
+                { 
+                  name: "🏆 Top 5 Contributors", 
+                  value: leaderboard, 
+                  inline: false 
+                }
+              ],
+              footer: {
+                text: "Gerado automaticamente por GitHub Actions • Engine EGM",
+                icon_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+              },
+              timestamp: now.toISOString()
+            };
+
+            try {
+              const response = await fetch(process.env.DISCORD_WEBHOOK_METRICS, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                  username: "GBE Metrics Master",
+                  embeds: [embed]
+                })
+              });
+
+              if (!response.ok) throw new Error(`Discord HTTP ${response.status}`);
+              console.log(`✅ Dashboard v5.1 enviado com sucesso! (${issues.length} issues processadas)`);
+            } catch (error) {
+              console.error('❌ Falha no envio:', error.message);
+              core.setFailed(`Falha ao enviar dashboard: ${error.message}`);
+            }
