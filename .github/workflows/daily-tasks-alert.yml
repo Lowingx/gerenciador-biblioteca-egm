@@ -27,25 +27,17 @@ jobs:
             const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
             const { data: issues } = await github.rest.issues.listForRepo({
-              owner, repo, state: 'open', per_page: 50, sort: 'updated'
+              owner, repo, state: 'open', per_page: 100
             });
 
             const realIssues = issues.filter(i => !i.pull_request);
+            console.log(`Issues encontradas: ${realIssues.length}`);
 
             const categories = [
-              { name: "Frontend Interface", regex: /front|interface|ui|ux|css|react/i, webhook: process.env.DISCORD_FRONTEND, color: 0x3498db, emoji: "🎨" },
-              { name: "Backend Core",       regex: /back|core|api|server|fastapi|python/i, webhook: process.env.DISCORD_BACKEND, color: 0x2ecc71, emoji: "⚙️" },
-              { name: "Banco de Dados",     regex: /banco|db|dados|database|sql|postgres/i, webhook: process.env.DISCORD_BANCO,   color: 0x9b59b6, emoji: "🗄️" }
+              { name: "Frontend", regex: /front|interface|ui|ux|css|react/i, webhook: process.env.DISCORD_FRONTEND, color: 3447003 },
+              { name: "Backend",  regex: /back|core|api|server|fastapi|python/i, webhook: process.env.DISCORD_BACKEND, color: 3066993 },
+              { name: "Banco",    regex: /banco|db|dados|database|sql|postgres/i, webhook: process.env.DISCORD_BANCO,   color: 10181046 }
             ];
-
-            const formatTasks = (tasks) => {
-              if (tasks.length === 0) return "✅ *Tudo limpo por aqui!*";
-              return tasks.slice(0, 5).map(i => {
-                // Pega os primeiros 100 caracteres da descrição e remove quebras de linha extras
-                const desc = i.body ? i.body.replace(/[\r\n]+/g, ' ').substring(0, 100).trim() + "..." : "Sem descrição.";
-                return `🔹 **[#${i.number}](${i.html_url}) ${i.title}**\n> 📝 ${desc}`;
-              }).join('\n\n');
-            };
 
             for (const cat of categories) {
               if (!cat.webhook) continue;
@@ -56,34 +48,36 @@ jobs:
               const staleTasks = catTasks.filter(i => new Date(i.updated_at) < sevenDaysAgo);
               const activeTasks = catTasks.filter(i => new Date(i.updated_at) >= sevenDaysAgo);
 
-              const embed = {
-                title: `${cat.emoji} Report Diário: ${cat.name}`,
-                color: cat.color,
-                description: `Resumo das atividades pendentes para o time de ${cat.name}.`,
-                fields: [
-                  {
-                    name: `⚠️ URGENTE (Parado há +7 dias)`,
-                    value: formatTasks(staleTasks),
-                    inline: false
-                  },
-                  {
-                    name: `🕒 EM ANDAMENTO`,
-                    value: formatTasks(activeTasks),
-                    inline: false
-                  }
-                ],
-                footer: { text: `Engine EGM • ${catTasks.length} tarefas no total` },
-                timestamp: new Date().toISOString()
+              const formatList = (list) => {
+                if (list.length === 0) return "✅ Nenhuma tarefa.";
+                return list.slice(0, 5).map(i => {
+                  // Limpa a descrição: remove quebras de linha e limita a 80 caracteres
+                  const cleanBody = i.body ? i.body.replace(/\s+/g, ' ').substring(0, 80) + '...' : 'Sem descrição.';
+                  return `**#${i.number}** [${i.title}](${i.html_url})\n> ${cleanBody}`;
+                }).join('\n\n');
+              };
+
+              const payload = {
+                embeds: [{
+                  title: `🚀 Daily Report: ${cat.name}`,
+                  color: cat.color,
+                  fields: [
+                    { name: "🔥 Urgente (+7 dias)", value: formatList(staleTasks) },
+                    { name: "🛠️ Em andamento", value: formatList(activeTasks) }
+                  ],
+                  timestamp: new Date().toISOString()
+                }]
               };
 
               try {
-                await fetch(cat.webhook, {
+                const response = await fetch(cat.webhook, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ embeds: [embed] })
+                  body: JSON.stringify(payload)
                 });
-                console.log(`✅ Alerta estilizado enviado para ${cat.name}`);
-              } catch (err) {
-                console.error(`❌ Erro: ${err.message}`);
+                if (!response.ok) throw new Error(`Status ${response.status}`);
+                console.log(`✅ Enviado para ${cat.name}`);
+              } catch (e) {
+                console.log(`❌ Erro em ${cat.name}: ${e.message}`);
               }
             }
