@@ -5,15 +5,11 @@ on:
     - cron: '0 12 * * 1'
   workflow_dispatch:
 
-permissions:
-  issues: read
-  pull-requests: read
-
 jobs:
   weekly-dashboard:
     runs-on: ubuntu-latest
     steps:
-      - name: 📊 Gerar Dashboard Semanal v5.1 (EGM Edition)
+      - name: 📊 Gerar Dashboard Semanal v5.2
         uses: actions/github-script@v7
         env:
           DISCORD_WEBHOOK_METRICS: ${{ secrets.DISCORD_WEBHOOK_METRICS }}
@@ -73,13 +69,17 @@ jobs:
               contributors[login] = (contributors[login] || 0) + 1;
             });
 
-            const leaderboard = Object.entries(contributors)
+            let leaderboard = Object.entries(contributors)
               .sort((a, b) => b[1] - a[1])
               .slice(0, 5)
               .map(([name, count], i) => 
                 `${['🥇', '🥈', '🥉', '🏅', '🎖️'][i] || '⭐'} **${name}**: ${count} contribuições`
               )
-              .join('\n') || 'Nenhuma contribuição registrada esta semana...';
+              .join('\n');
+
+            if (!leaderboard || leaderboard.trim() === '') {
+              leaderboard = "Nenhuma contribuição registrada esta semana... 😴";
+            }
 
             const embed = {
               title: "📊 GBE - Dashboard Semanal",
@@ -89,23 +89,22 @@ jobs:
               fields: [
                 { 
                   name: "📈 Atividade", 
-                  value: `🆕 **${issuesCreated.length}** criadas\n✅ **${issuesClosed.length}** resolvidas\n🔀 **${prsMerged.length}** PRs merged\n🎯 **${completionRate}%** taxa de entrega`, 
+                  value: `🆕 **${issuesCreated.length || 0}** criadas\n✅ **${issuesClosed.length || 0}** resolvidas\n🔀 **${prsMerged.length || 0}** PRs merged\n🎯 **${completionRate || 0}%** taxa`, 
                   inline: true 
                 },
                 { 
                   name: "⚠️ Saúde do Projeto", 
-                  value: `📌 **${openIssues}** issues abertas\n⏳ **${staleIssues}** stale tasks (>10 dias)`, 
+                  value: `📌 **${openIssues || 0}** issues abertas\n⏳ **${staleIssues || 0}** stale tasks (>10 dias)`, 
                   inline: true 
                 },
                 { 
                   name: "🏆 Top 5 Contributors", 
-                  value: leaderboard, 
+                  value: leaderboard.substring(0, 1024), 
                   inline: false 
                 }
               ],
               footer: {
-                text: "Gerado automaticamente por GitHub Actions • Engine EGM",
-                icon_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                text: "Gerado automaticamente por GitHub Actions • Engine EGM"
               },
               timestamp: now.toISOString()
             };
@@ -120,8 +119,12 @@ jobs:
                 })
               });
 
-              if (!response.ok) throw new Error(`Discord HTTP ${response.status}`);
-              console.log(`✅ Dashboard v5.1 enviado com sucesso! (${issues.length} issues processadas)`);
+              const responseText = await response.text();
+              if (!response.ok) {
+                console.error(`Discord Erro Detalhado: ${responseText}`);
+                throw new Error(`Discord HTTP ${response.status}`);
+              }
+              console.log(`✅ Dashboard v5.2 enviado com sucesso! (${issues.length} issues processadas)`);
             } catch (error) {
               console.error('❌ Falha no envio:', error.message);
               core.setFailed(`Falha ao enviar dashboard: ${error.message}`);
