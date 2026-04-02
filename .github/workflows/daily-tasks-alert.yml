@@ -26,20 +26,12 @@ jobs:
             const repo = 'gerenciador-biblioteca-egm';
             const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-            const issues = [];
-            let page = 1;
-            let hasMore = true;
-            while (hasMore && page <= 3) {
-              const { data } = await github.rest.issues.listForRepo({
-                owner, repo, state: 'open', per_page: 100, page,
-                sort: 'updated', direction: 'desc'
-              });
-              issues.push(...data);
-              hasMore = data.length === 100;
-              page++;
-            }
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', per_page: 100
+            });
 
             const realIssues = issues.filter(i => !i.pull_request);
+            console.log(`🔎 Total de Issues abertas encontradas: ${realIssues.length}`);
 
             const categories = [
               { name: "Frontend Interface", regex: /front|interface|ui|ux|css|react/i, webhook: process.env.DISCORD_FRONTEND, color: 0x3498db },
@@ -48,10 +40,21 @@ jobs:
             ];
 
             for (const cat of categories) {
-              if (!cat.webhook) continue;
+              if (!cat.webhook) {
+                console.log(`⚠️ Webhook para ${cat.name} não configurado nos Secrets.`);
+                continue;
+              }
 
-              const catTasks = realIssues.filter(i => i.labels.some(l => l.name.match(cat.regex)));
-              if (catTasks.length === 0) continue;
+              const catTasks = realIssues.filter(i => i.labels.some(l => {
+                const match = l.name.match(cat.regex);
+                if (match) console.log(`✅ Issue #${i.number} combinou com ${cat.name} via label [${l.name}]`);
+                return match;
+              }));
+
+              if (catTasks.length === 0) {
+                console.log(`ℹ️ Nenhuma tarefa encontrada para ${cat.name}`);
+                continue;
+              }
 
               const staleTasks = catTasks.filter(i => new Date(i.updated_at) < sevenDaysAgo);
               const activeTasks = catTasks.filter(i => new Date(i.updated_at) >= sevenDaysAgo);
@@ -62,20 +65,16 @@ jobs:
                 fields: [
                   {
                     name: `🔥 Urgente (${staleTasks.length} stale)`,
-                    value: staleTasks.length 
-                      ? staleTasks.slice(0, 6).map(i => `• [#${i.number}](${i.html_url}) ${i.title}`).join('\n')
-                      : "✅ Sem tarefas paradas.",
+                    value: staleTasks.length ? staleTasks.slice(0, 6).map(i => `• [#${i.number}](${i.html_url}) ${i.title}`).join('\n') : "✅ Tudo em movimento!",
                     inline: false
                   },
                   {
                     name: `🛠️ Em andamento (${activeTasks.length})`,
-                    value: activeTasks.length 
-                      ? activeTasks.slice(0, 6).map(i => `• [#${i.number}](${i.html_url}) ${i.title}`).join('\n')
-                      : "Nenhuma tarefa ativa no momento.",
+                    value: activeTasks.length ? activeTasks.slice(0, 6).map(i => `• [#${i.number}](${i.html_url}) ${i.title}`).join('\n') : "Sem tarefas ativas.",
                     inline: false
                   }
                 ],
-                footer: { text: `Total: ${catTasks.length} tarefas abertas • ${new Date().toLocaleDateString('pt-BR')}` },
+                footer: { text: `Total: ${catTasks.length} abertas` },
                 timestamp: new Date().toISOString()
               };
 
@@ -85,9 +84,9 @@ jobs:
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ embeds: [embed] })
                 });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                console.log(`✅ Alerta enviado para ${cat.name}`);
+                if (res.ok) console.log(`🚀 Enviado com sucesso para ${cat.name}!`);
+                else console.log(`❌ Erro no Discord para ${cat.name}: ${res.status}`);
               } catch (err) {
-                console.error(`❌ Falha ao enviar para ${cat.name}: ${err.message}`);
+                console.error(`❌ Falha no fetch: ${err.message}`);
               }
             }
