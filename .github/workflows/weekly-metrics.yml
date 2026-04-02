@@ -5,6 +5,11 @@ on:
     - cron: '0 12 * * 1'
   workflow_dispatch:
 
+permissions:
+  issues: read
+  pull-requests: read
+  contents: read
+
 jobs:
   weekly-dashboard:
     runs-on: ubuntu-latest
