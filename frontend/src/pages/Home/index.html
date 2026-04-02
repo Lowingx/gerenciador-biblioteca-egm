@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GBE - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        poppins: ['Poppins', 'sans-serif'],
+                        montserrat: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-mesh-animado flex items-center justify-center p-4 min-h-screen">
+
+    <div class="bg-[#EEEEF8] w-full max-w-md p-8 sm:p-10 rounded-3xl shadow-2xl">
+        
+        <div class="flex justify-center mb-6">
+            <img src="logo-gbe.png" alt="Logo GBE" class="w-15 h-20 object-contain">
+        </div>
+
+        <h2 class="font-poppins text-2xl font-regular text-center text-[#126ABC] mb-1">Bem-vindo ao GBE</h2>
+        <p class="font-montserrat text-sm text-center text-gray-500 mb-8">Faça login para continuar</p>
+
+    <form id="loginForm" class="space-y-6">
+    
+    <div class="group flex flex-col">
+        <label class="block font-montserrat text-[11px] font-bold text-[#282579] uppercase tracking-wider mb-2 ml-1">
+            RA (Registro do Aluno)
+        </label>
+        <div class="flex items-center p-3 rounded-2xl bg-white border border-gray-200 transition-all duration-300 
+                    focus-within:ring-4 focus-within:ring-[#7C3ED0]/10 focus-within:border-[#7C3ED0]/40">
+            
+            <img src="lapis-icon.png" alt="" 
+                class="w-8 h-8 mr-3 object-contain opacity-70 group-focus-within:opacity-100 transition-opacity">
+            
+            <input type="text" id="ra" required placeholder="Digite seu RA" 
+                class="w-full bg-transparent focus:outline-none font-montserrat text-gray-700 placeholder-gray-400 text-sm border-none ring-0 p-0">
+        </div>
+    </div>
+
+    <div class="group flex flex-col">
+        <label class="block font-montserrat text-[11px] font-bold text-[#282579] uppercase tracking-wider mb-2 ml-1">
+            Senha
+        </label>
+        <div class="flex items-center p-3 rounded-2xl bg-white border border-gray-200 transition-all duration-300 
+                    focus-within:ring-4 focus-within:ring-[#7C3ED0]/10 focus-within:border-[#7C3ED0]/40">
+            
+            <img src="cadeado-icon.png" alt="" 
+                class="w-8 h-8 mr-3 object-contain opacity-70 group-focus-within:opacity-100 transition-opacity">
+            
+            <input type="password" id="senha" required placeholder="••••••••" 
+                class="w-full bg-transparent focus:outline-none font-montserrat text-gray-700 placeholder-gray-400 text-sm border-none ring-0 p-0">
+        </div>
+    </div>
+
+    <button type="submit" 
+        class="w-full py-4 mt-2 rounded-full text-white font-poppins font-bold text-lg 
+               bg-gradient-to-r from-[#7C3ED0] via-[#6882DB] to-[#54C6E5] 
+               hover:brightness-105 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-purple-500/20">
+        Entrar
+    </button>
+</form>
+
+        <div class="mt-8 text-center font-montserrat text-sm space-y-2 sm:space-y-0 sm:space-x-4">
+            <a href="#" class="text-[#282579] hover:underline decoration-[#AC5DC7]">Esqueceu sua senha?</a>
+            <span class="hidden sm:inline text-gray-300">|</span>
+            <a href="#" class="text-[#282579] hover:underline decoration-[#AC5DC7]">Precisa de ajuda?</a>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
