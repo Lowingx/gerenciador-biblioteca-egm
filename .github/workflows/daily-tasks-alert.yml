@@ -1,0 +1,92 @@
+name: GBE - Alertas Diários de Tarefas por Team
+
+on:
+  schedule:
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: read
+  pull-requests: read
+
+jobs:
+  daily-alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar alertas diários por time
+        uses: actions/github-script@v7
+        env:
+          DISCORD_FRONTEND: ${{ secrets.DISCORD_FRONTEND }}
+          DISCORD_BACKEND: ${{ secrets.DISCORD_BACKEND }}
+          DISCORD_BANCO: ${{ secrets.DISCORD_BANCO }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = 'Lowingx';
+            const repo = 'gerenciador-biblioteca-egm';
+            const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+            const issues = [];
+            let page = 1;
+            let hasMore = true;
+            while (hasMore && page <= 3) {
+              const { data } = await github.rest.issues.listForRepo({
+                owner, repo, state: 'open', per_page: 100, page,
+                sort: 'updated', direction: 'desc'
+              });
+              issues.push(...data);
+              hasMore = data.length === 100;
+              page++;
+            }
+
+            const realIssues = issues.filter(i => !i.pull_request);
+
+            const categories = [
+              { name: "Frontend Interface", regex: /front|interface|ui|ux|css|react/i, webhook: process.env.DISCORD_FRONTEND, color: 0x3498db },
+              { name: "Backend Core",       regex: /back|core|api|server|fastapi|python/i, webhook: process.env.DISCORD_BACKEND, color: 0x2ecc71 },
+              { name: "Banco de Dados",     regex: /banco|db|dados|database|sql|postgres/i, webhook: process.env.DISCORD_BANCO,   color: 0x9b59b6 }
+            ];
+
+            for (const cat of categories) {
+              if (!cat.webhook) continue;
+
+              const catTasks = realIssues.filter(i => i.labels.some(l => l.name.match(cat.regex)));
+              if (catTasks.length === 0) continue;
+
+              const staleTasks = catTasks.filter(i => new Date(i.updated_at) < sevenDaysAgo);
+              const activeTasks = catTasks.filter(i => new Date(i.updated_at) >= sevenDaysAgo);
+
+              const embed = {
+                title: `🚀 Daily Report: ${cat.name}`,
+                color: cat.color,
+                fields: [
+                  {
+                    name: `🔥 Urgente (${staleTasks.length} stale)`,
+                    value: staleTasks.length 
+                      ? staleTasks.slice(0, 6).map(i => `• [#${i.number}](${i.html_url}) ${i.title}`).join('\n')
+                      : "✅ Sem tarefas paradas. O time tá voando!",
+                    inline: false
+                  },
+                  {
+                    name: `🛠️ Em andamento (${activeTasks.length})`,
+                    value: activeTasks.length 
+                      ? activeTasks.slice(0, 6).map(i => `• [#${i.number}](${i.html_url}) ${i.title}`).join('\n')
+                      : "Nenhuma tarefa ativa no momento.",
+                    inline: false
+                  }
+                ],
+                footer: { text: `Total: ${catTasks.length} tarefas abertas • ${new Date().toLocaleDateString('pt-BR')}` },
+                timestamp: new Date().toISOString()
+              };
+
+              try {
+                await fetch(cat.webhook, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ embeds: [embed] })
+                });
+                console.log(`✅ Alerta enviado para ${cat.name}`);
+              } catch (err) {
+                console.error(`❌ Falha ao enviar para ${cat.name}: ${err.message}`);
+              }
+            }
