@@ -71,7 +71,7 @@ docker compose up -d --build
 ### Portas de Acesso Local
 * 🌐 **Interface Web:** `http://localhost:5173`
 * 🔌 **Documentação API (Swagger):** `http://localhost:8000/docs`
-* 🗃️ **Banco de Dados:** `localhost:5432`
+* 🗃️ **Banco de Dados:** `localhost:5432` 
 
 ---
 
