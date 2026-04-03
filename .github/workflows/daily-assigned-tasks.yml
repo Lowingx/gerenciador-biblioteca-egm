@@ -1,0 +1,66 @@
+name: GBE - Tarefas Atribuídas por Membro
+
+on:
+  schedule:
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: read
+
+jobs:
+  daily-assigned:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar tarefas atribuídas
+        uses: actions/github-script@v7
+        env:
+          DISCORD_FRONTEND: ${{ secrets.DISCORD_FRONTEND }}
+          DISCORD_BACKEND: ${{ secrets.DISCORD_BACKEND }}
+          DISCORD_BANCO: ${{ secrets.DISCORD_BANCO }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = 'Lowingx';
+            const repo = 'gerenciador-biblioteca-egm';
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', per_page: 100,
+              sort: 'updated', direction: 'desc'
+            });
+
+            const frontend = issues.filter(i => i.assignee && i.labels.some(l => l.name.toLowerCase().match(/front|interface|ui|ux/)));
+            const backend = issues.filter(i => i.assignee && i.labels.some(l => l.name.toLowerCase().match(/back|core|api|server/)));
+            const banco = issues.filter(i => i.assignee && i.labels.some(l => l.name.toLowerCase().match(/banco|db|dados|database/)));
+
+            const discordMap = {
+              "Lowingx": "1416271217727377540",
+              "gdTech1": "1416271217727377540",
+              "IcaroLuizz": "693541367233773608",
+              "mig1z": "783069888041975898",
+              "XxXCrossFakeXxX": "609040036863803415"
+            };
+
+            const createMessage = (emoji, title, taskList) => {
+              if (taskList.length === 0) return `${emoji} **${title}**\nNenhuma tarefa atribuída.`;
+              let msg = `${emoji} **${title}** (${taskList.length})\n`;
+              taskList.forEach(i => {
+                const id = discordMap[i.assignee.login];
+                const mention = id ? `<@${id}>` : `@${i.assignee.login}`;
+                msg += `• [#${i.number}](${i.html_url}) ${i.title} → ${mention}\n`;
+              });
+              return msg;
+            };
+
+            const send = async (webhook, content) => {
+              if (!webhook) return;
+              await fetch(webhook, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: content.substring(0, 2000) })
+              });
+            };
+
+            await send(process.env.DISCORD_FRONTEND, createMessage("🚀", "Frontend Interface - Tarefas Atribuídas", frontend));
+            await send(process.env.DISCORD_BACKEND, createMessage("🔧", "Backend Core - Tarefas Atribuídas", backend));
+            await send(process.env.DISCORD_BANCO, createMessage("🗄️", "Banco de Dados - Tarefas Atribuídas", banco));
