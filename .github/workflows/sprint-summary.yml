@@ -2,7 +2,7 @@ name: GBE - Resumo de Sprint Automático
 
 on:
   schedule:
-    - cron: '0 12 * * 5'   # Toda sexta-feira às 09:00
+    - cron: '0 12 * * 5'
   workflow_dispatch:
 
 permissions:
@@ -20,31 +20,55 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              per_page: 100
+            });
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              per_page: 50
+            });
 
-            const { data: issues } = await github.rest.issues.listForRepo({ owner, repo, state: 'all', per_page: 100 });
-            const { data: pulls } = await github.rest.pulls.list({ owner, repo, state: 'all', per_page: 50 });
+            const oneWeekAgo = new Date(Date.now() - 7 * 86400000);
 
-            const now = new Date();
-            const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const realIssues = issues.filter(i => !i.pull_request && i.closed_at && new Date(i.closed_at) > oneWeekAgo);
+            const issuesCompleted = realIssues.filter(i => i.state_reason === 'completed');
+            const issuesDiscarded = realIssues.filter(i => i.state_reason === 'not_planned');
 
-            const issuesClosed = issues.filter(i => i.closed_at && new Date(i.closed_at) > oneWeekAgo);
             const prsMerged = pulls.filter(p => p.merged_at && new Date(p.merged_at) > oneWeekAgo);
 
-            const totalClosed = issuesClosed.length + prsMerged.length;
+            const totalReal = issuesCompleted.length + prsMerged.length;
+
+            const workers = [
+              ...issuesCompleted.flatMap(i => i.assignees ? i.assignees.map(a => a.login) : []),
+              ...prsMerged.map(p => p.user.login)
+            ];
+
+            let mvp = "Ninguém entregou nada esta semana 👻";
+            if (workers.length > 0) {
+              const counts = workers.reduce((acc, user) => { acc[user] = (acc[user] || 0) + 1; return acc; }, {});
+              const top = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+              mvp = `**@${top}** com ${counts[top]} entregas 👑`;
+            }
 
             const embed = {
               title: "📊 Resumo de Sprint - Semana Finalizada",
-              color: 0x2ecc71,
-              description: `Semana de ${now.toLocaleDateString('pt-BR')}`,
+              color: 46296,
+              description: `Semana de ${new Date().toLocaleDateString('pt-BR')}`,
               fields: [
-                { name: "✅ Tarefas Concluídas", value: `${totalClosed}`, inline: true },
-                { name: "📌 Issues Fechadas", value: `${issuesClosed.length}`, inline: true },
-                { name: "🔀 PRs Merged", value: `${prsMerged.length}`, inline: true }
+                { name: "🏆 Destaque da Semana", value: mvp, inline: false },
+                { name: "✅ Entregas Reais", value: `${totalReal}`, inline: true },
+                { name: "📌 Issues Concluídas", value: `${issuesCompleted.length}`, inline: true },
+                { name: "🔀 PRs Merged", value: `${prsMerged.length}`, inline: true },
+                { name: "🗑️ Descartadas", value: `${issuesDiscarded.length}`, inline: true },
+                { name: "📬 Backlog Aberto", value: `${issues.filter(i => i.state === 'open' && !i.pull_request).length}`, inline: true }
               ],
               footer: { text: "GBE - Resumo Semanal" },
-              timestamp: now.toISOString()
+              timestamp: new Date().toISOString()
             };
 
             await fetch(process.env.DISCORD_METRICS, {
