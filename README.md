@@ -26,7 +26,7 @@
 | **Build Tool**| Vite | ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) | `6.0` |
 | **Interface** | Tailwind CSS | ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white) | `3.4+` |
 | **Database** | PostgreSQL | ![Postgres](https://img.shields.io/badge/PostgreSQL-316192?style=flat-square&logo=postgresql&logoColor=white) | `16` |
-| **ORM** | SQLAlchemy & Alembic | ![DB](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square) | `-` |
+| **ORM** | SQLAlchemy & Alembic | ![DB](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square) | `2.0.49` |
 | **DevOps** | Docker | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) | `24+` |
 
 ---
