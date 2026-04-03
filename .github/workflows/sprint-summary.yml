@@ -1,0 +1,54 @@
+name: GBE - Resumo de Sprint Automático
+
+on:
+  schedule:
+    - cron: '0 12 * * 5'   # Toda sexta-feira às 09:00
+  workflow_dispatch:
+
+permissions:
+  issues: read
+  pull-requests: read
+
+jobs:
+  sprint-summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gerar resumo de sprint
+        uses: actions/github-script@v7
+        env:
+          DISCORD_METRICS: ${{ secrets.DISCORD_METRICS }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const { data: issues } = await github.rest.issues.listForRepo({ owner, repo, state: 'all', per_page: 100 });
+            const { data: pulls } = await github.rest.pulls.list({ owner, repo, state: 'all', per_page: 50 });
+
+            const now = new Date();
+            const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+            const issuesClosed = issues.filter(i => i.closed_at && new Date(i.closed_at) > oneWeekAgo);
+            const prsMerged = pulls.filter(p => p.merged_at && new Date(p.merged_at) > oneWeekAgo);
+
+            const totalClosed = issuesClosed.length + prsMerged.length;
+
+            const embed = {
+              title: "📊 Resumo de Sprint - Semana Finalizada",
+              color: 0x2ecc71,
+              description: `Semana de ${now.toLocaleDateString('pt-BR')}`,
+              fields: [
+                { name: "✅ Tarefas Concluídas", value: `${totalClosed}`, inline: true },
+                { name: "📌 Issues Fechadas", value: `${issuesClosed.length}`, inline: true },
+                { name: "🔀 PRs Merged", value: `${prsMerged.length}`, inline: true }
+              ],
+              footer: { text: "GBE - Resumo Semanal" },
+              timestamp: now.toISOString()
+            };
+
+            await fetch(process.env.DISCORD_METRICS, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ embeds: [embed] })
+            });
