@@ -1,20 +1,15 @@
-# 📚 Gerenciador de Biblioteca GBE
-
-### ⚡ Sistema Inteligente de Gestão para Bibliotecas Escolares
-
-O **GBE** é uma plataforma Full-Stack de alto desempenho desenvolvida para modernizar a administração de bibliotecas. O sistema centraliza o controle de acervo, usuários e fluxos de empréstimos, garantindo integridade de dados e uma experiência de usuário fluida.
-
----
-
-## 📊 Status e Indicadores do Projeto
-
 <div align="center">
 
-![Status](https://img.shields.io/badge/Status-Em%20Desenvolvimento-4488ff?style=for-the-badge&logo=github)
-![Versão](https://img.shields.io/badge/Versão-1.0.0--beta-blueviolet?style=for-the-badge)
-![Licença](https://img.shields.io/badge/Licença-MIT-orange?style=for-the-badge)
-![Repo Size](https://img.shields.io/github/repo-size/Lowingx/gerenciador-biblioteca-egm?style=for-the-badge&color=333)
-![Last Commit](https://img.shields.io/github/last-commit/Lowingx/gerenciador-biblioteca-egm?style=for-the-badge&color=brightgreen)
+# 📚 Gerenciador de Biblioteca GBE
+**Sistema Inteligente de Gestão para Bibliotecas Escolares**
+
+*Uma plataforma Full-Stack de alto desempenho desenvolvida para modernizar a administração de bibliotecas, garantindo integridade de dados e latência zero.*
+
+[![Status](https://img.shields.io/badge/Status-Em%20Desenvolvimento-0052cc?style=for-the-badge&logo=github)](https://github.com/Lowingx/gerenciador-biblioteca-egm)
+[![Versão](https://img.shields.io/badge/Versão-1.0.0--beta-blueviolet?style=for-the-badge)](https://github.com/Lowingx/gerenciador-biblioteca-egm)
+[![Repo Size](https://img.shields.io/github/repo-size/Lowingx/gerenciador-biblioteca-egm?style=for-the-badge&color=2ea043)](https://github.com/Lowingx/gerenciador-biblioteca-egm)
+[![Last Commit](https://img.shields.io/github/last-commit/Lowingx/gerenciador-biblioteca-egm?style=for-the-badge&color=e34c26)](https://github.com/Lowingx/gerenciador-biblioteca-egm/commits/develop)
+[![Licença](https://img.shields.io/badge/Licença-MIT-orange?style=for-the-badge)](LICENSE)
 
 </div>
 
@@ -24,15 +19,15 @@ O **GBE** é uma plataforma Full-Stack de alto desempenho desenvolvida para mode
 
 | Camada | Tecnologia | Badge | Versão |
 | :--- | :--- | :--- | :--- |
-| **Linguagem Backend** | Python | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) | `3.11+` |
-| **Framework API** | FastAPI | ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat-square&logo=fastapi) | `Latest` |
-| **Frontend Core** | React | ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB) | `19.0` |
+| **Backend** | Python | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) | `3.11+` |
+| **API Rest** | FastAPI | ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat-square&logo=fastapi) | `Latest` |
+| **Frontend** | React | ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB) | `19.0` |
 | **Tipagem** | TypeScript | ![TS](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white) | `5.0+` |
-| **Build Tool** | Vite | ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) | `6.0` |
-| **Estilização** | Tailwind CSS | ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white) | `3.4+` |
-| **Banco de Dados** | PostgreSQL | ![Postgres](https://img.shields.io/badge/PostgreSQL-316192?style=flat-square&logo=postgresql&logoColor=white) | `16` |
-| **ORM / Migrations** | SQLAlchemy & Alembic | ![DB](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square) | `-` |
-| **Containerização** | Docker | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) | `24+` |
+| **Build Tool**| Vite | ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) | `6.0` |
+| **Interface** | Tailwind CSS | ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white) | `3.4+` |
+| **Database** | PostgreSQL | ![Postgres](https://img.shields.io/badge/PostgreSQL-316192?style=flat-square&logo=postgresql&logoColor=white) | `16` |
+| **ORM** | SQLAlchemy & Alembic | ![DB](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square) | `-` |
+| **DevOps** | Docker | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) | `24+` |
 
 ---
 
@@ -63,8 +58,8 @@ root/
 ### Procedimento de Inicialização
 
 ```bash
-# 1. Clonagem do repositório via SSH ou HTTPS
-git clone [https://github.com/Lowingx/gerenciador-biblioteca-egm.git](https://github.com/Lowingx/gerenciador-biblioteca-egm.git)
+# 1. Clonagem do repositório
+git clone https://github.com/Lowingx/gerenciador-biblioteca-egm.git
 
 # 2. Navegação para o diretório raiz
 cd gerenciador-biblioteca-egm
@@ -82,11 +77,12 @@ docker compose up -d --build
 
 ## ⚙️ Protocolos de Contribuição e Qualidade
 
-Para garantir a integridade do código e a rastreabilidade das features, adotamos o seguinte fluxo:
+> [!CAUTION]
+> **Acesso Restrito:** Push direto na `main` é estritamente proibido. Toda integração deve ocorrer obrigatoriamente via Pull Request para a branch `develop`.
 
 ### 🔱 Gerenciamento de Branches
 * **`main`**: Apenas código estável e em produção.
-* **`develop`**: Branch de integração. Todo PR deve ser destinado a ela.
+* **`develop`**: Branch principal de integração.
 * **`feature/pb-XX-nome`**: Desenvolvimento de novas funcionalidades.
 * **`fix/pb-XX-nome`**: Correção de bugs críticos.
 
@@ -94,7 +90,7 @@ Para garantir a integridade do código e a rastreabilidade das features, adotamo
 | Tipo | Descrição |
 | :--- | :--- |
 | `feat:` | Introdução de nova funcionalidade. |
-| `fix:` | Correção de um erro. |
+| `fix:` | Correção de um erro em produção ou desenvolvimento. |
 | `chore:` | Mudanças em ferramentas ou bibliotecas de build. |
 | `refactor:` | Alteração de código que não corrige erro nem adiciona feature. |
 
@@ -116,5 +112,4 @@ Para garantir a integridade do código e a rastreabilidade das features, adotamo
 Sincronização via Discord: `#github-issues-prs`
 
 </div>
-
 
