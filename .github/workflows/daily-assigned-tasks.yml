@@ -21,12 +21,13 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const owner = 'Lowingx';
-            const repo = 'gerenciador-biblioteca-egm';
-
             const { data: issues } = await github.rest.issues.listForRepo({
-              owner, repo, state: 'open', per_page: 100,
-              sort: 'updated', direction: 'desc'
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100,
+              sort: 'updated',
+              direction: 'desc'
             });
 
             const discordMap = {
@@ -37,16 +38,14 @@ jobs:
               "XxXCrossFakeXxX": "609040036863803415"
             };
 
-            const createPayload = (emoji, title, taskList) => {
-              if (taskList.length === 0) {
+            const createPayload = (emoji, title, tasks) => {
+              if (tasks.length === 0) {
                 return { embeds: [{ title: `${emoji} ${title}`, description: "Nenhuma tarefa atribuída.", color: 11184810 }] };
               }
 
-              const pings = [...new Set(taskList.flatMap(i => 
-                i.assignees.map(a => discordMap[a.login] ? `<@${discordMap[a.login]}>` : '')
-              ))].filter(Boolean).join(' ');
+              const pings = [...new Set(tasks.flatMap(i => i.assignees.map(a => discordMap[a.login] ? `<@${discordMap[a.login]}>` : '')))].filter(Boolean).join(' ');
 
-              const lines = taskList.map(i => {
+              const lines = tasks.map(i => {
                 const mentions = i.assignees.map(a => {
                   const id = discordMap[a.login];
                   return id ? `<@${id}>` : `@${a.login}`;
@@ -57,16 +56,16 @@ jobs:
               return {
                 content: pings || null,
                 embeds: [{
-                  title: `${emoji} ${title} (${taskList.length})`,
+                  title: `${emoji} ${title} (${tasks.length})`,
                   description: lines,
                   color: 3447003
                 }]
               };
             };
 
-            const send = async (webhook, payload) => {
-              if (!webhook) return;
-              await fetch(webhook, {
+            const send = async (url, payload) => {
+              if (!url) return;
+              await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
