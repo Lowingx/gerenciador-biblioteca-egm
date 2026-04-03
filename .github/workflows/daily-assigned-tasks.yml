@@ -1,4 +1,4 @@
-name: GBE - Tarefas Atribuídas por Membro
+name: GBE - Tarefas Atribuídas por Membro (Diário)
 
 on:
   schedule:
@@ -12,7 +12,7 @@ jobs:
   daily-assigned:
     runs-on: ubuntu-latest
     steps:
-      - name: Enviar tarefas atribuídas
+      - name: Enviar tarefas atribuídas por time
         uses: actions/github-script@v7
         env:
           DISCORD_FRONTEND: ${{ secrets.DISCORD_FRONTEND }}
@@ -29,10 +29,6 @@ jobs:
               sort: 'updated', direction: 'desc'
             });
 
-            const frontend = issues.filter(i => i.assignee && i.labels.some(l => l.name.toLowerCase().match(/front|interface|ui|ux/)));
-            const backend = issues.filter(i => i.assignee && i.labels.some(l => l.name.toLowerCase().match(/back|core|api|server/)));
-            const banco = issues.filter(i => i.assignee && i.labels.some(l => l.name.toLowerCase().match(/banco|db|dados|database/)));
-
             const discordMap = {
               "Lowingx": "1416271217727377540",
               "gdTech1": "1416271217727377540",
@@ -41,26 +37,45 @@ jobs:
               "XxXCrossFakeXxX": "609040036863803415"
             };
 
-            const createMessage = (emoji, title, taskList) => {
-              if (taskList.length === 0) return `${emoji} **${title}**\nNenhuma tarefa atribuída.`;
-              let msg = `${emoji} **${title}** (${taskList.length})\n`;
-              taskList.forEach(i => {
+            const createPayload = (emoji, title, taskList) => {
+              if (taskList.length === 0) {
+                return { embeds: [{ title: `${emoji} ${title}`, description: "Nenhuma tarefa atribuída.", color: 11184810 }] };
+              }
+
+              const pings = [...new Set(taskList.map(i => {
+                const id = discordMap[i.assignee.login];
+                return id ? `<@${id}>` : '';
+              }))].filter(Boolean).join(' ');
+
+              const lines = taskList.map(i => {
                 const id = discordMap[i.assignee.login];
                 const mention = id ? `<@${id}>` : `@${i.assignee.login}`;
-                msg += `• [#${i.number}](${i.html_url}) ${i.title} → ${mention}\n`;
-              });
-              return msg;
+                return `• [#${i.number}](${i.html_url}) ${i.title}\n   ${mention}`;
+              }).join('\n\n');
+
+              return {
+                content: pings || null,
+                embeds: [{
+                  title: `${emoji} ${title} (${taskList.length})`,
+                  description: lines,
+                  color: 3447003
+                }]
+              };
             };
 
-            const send = async (webhook, content) => {
+            const send = async (webhook, payload) => {
               if (!webhook) return;
               await fetch(webhook, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: content.substring(0, 2000) })
+                body: JSON.stringify(payload)
               });
             };
 
-            await send(process.env.DISCORD_FRONTEND, createMessage("🚀", "Frontend Interface - Tarefas Atribuídas", frontend));
-            await send(process.env.DISCORD_BACKEND, createMessage("🔧", "Backend Core - Tarefas Atribuídas", backend));
-            await send(process.env.DISCORD_BANCO, createMessage("🗄️", "Banco de Dados - Tarefas Atribuídas", banco));
+            const frontend = issues.filter(i => i.assignee && i.labels.some(l => l.name.toLowerCase().match(/front|interface|ui|ux/)));
+            const backend = issues.filter(i => i.assignee && i.labels.some(l => l.name.toLowerCase().match(/back|core|api|server/)));
+            const banco = issues.filter(i => i.assignee && i.labels.some(l => l.name.toLowerCase().match(/banco|db|dados|database/)));
+
+            await send(process.env.DISCORD_FRONTEND, createPayload("🚀", "Frontend Interface", frontend));
+            await send(process.env.DISCORD_BACKEND, createPayload("🔧", "Backend Core", backend));
+            await send(process.env.DISCORD_BANCO, createPayload("🗄️", "Banco de Dados", banco));
