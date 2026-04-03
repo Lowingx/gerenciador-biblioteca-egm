@@ -42,15 +42,16 @@ jobs:
                 return { embeds: [{ title: `${emoji} ${title}`, description: "Nenhuma tarefa atribuída.", color: 11184810 }] };
               }
 
-              const pings = [...new Set(taskList.map(i => {
-                const id = discordMap[i.assignee.login];
-                return id ? `<@${id}>` : '';
-              }))].filter(Boolean).join(' ');
+              const pings = [...new Set(taskList.flatMap(i => 
+                i.assignees.map(a => discordMap[a.login] ? `<@${discordMap[a.login]}>` : '')
+              ))].filter(Boolean).join(' ');
 
               const lines = taskList.map(i => {
-                const id = discordMap[i.assignee.login];
-                const mention = id ? `<@${id}>` : `@${i.assignee.login}`;
-                return `• [#${i.number}](${i.html_url}) ${i.title}\n   ${mention}`;
+                const mentions = i.assignees.map(a => {
+                  const id = discordMap[a.login];
+                  return id ? `<@${id}>` : `@${a.login}`;
+                }).join(' ');
+                return `• [#${i.number}](${i.html_url}) ${i.title}\n   ${mentions}`;
               }).join('\n\n');
 
               return {
@@ -72,9 +73,9 @@ jobs:
               });
             };
 
-            const frontend = issues.filter(i => i.assignee && i.labels.some(l => l.name.toLowerCase().match(/front|interface|ui|ux/)));
-            const backend = issues.filter(i => i.assignee && i.labels.some(l => l.name.toLowerCase().match(/back|core|api|server/)));
-            const banco = issues.filter(i => i.assignee && i.labels.some(l => l.name.toLowerCase().match(/banco|db|dados|database/)));
+            const frontend = issues.filter(i => i.assignees && i.assignees.length > 0 && i.labels.some(l => l.name.toLowerCase().match(/front|interface|ui|ux/)));
+            const backend = issues.filter(i => i.assignees && i.assignees.length > 0 && i.labels.some(l => l.name.toLowerCase().match(/back|core|api|server/)));
+            const banco = issues.filter(i => i.assignees && i.assignees.length > 0 && i.labels.some(l => l.name.toLowerCase().match(/banco|db|dados|database/)));
 
             await send(process.env.DISCORD_FRONTEND, createPayload("🚀", "Frontend Interface", frontend));
             await send(process.env.DISCORD_BACKEND, createPayload("🔧", "Backend Core", backend));
