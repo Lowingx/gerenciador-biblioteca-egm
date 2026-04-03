@@ -1,44 +1,120 @@
-# Gerenciador de Biblioteca GBE
-> Sistema inteligente para gestão de acervo e monitoramento acústico ambiental.
+# 📚 Gerenciador de Biblioteca GBE
 
-[![Project Status](https://img.shields.io/badge/Status-Em%20Desenvolvimento-blue?style=for-the-badge)](https://github.com/Lowingx/gerenciador-biblioteca-egm/projects)
-[![GitHub repo size](https://img.shields.io/github/repo-size/Lowingx/gerenciador-biblioteca-egm?style=for-the-badge&color=blue)](https://github.com/Lowingx/gerenciador-biblioteca-egm)
-[![GitHub last commit](https://img.shields.io/github/last-commit/Lowingx/gerenciador-biblioteca-egm?style=for-the-badge&color=brightgreen)](https://github.com/Lowingx/gerenciador-biblioteca-egm/commits/main)
+### ⚡ Sistema Inteligente de Gestão para Bibliotecas Escolares
+
+O **GBE** é uma plataforma Full-Stack de alto desempenho desenvolvida para modernizar a administração de bibliotecas. O sistema centraliza o controle de acervo, usuários e fluxos de empréstimos, garantindo integridade de dados e uma experiência de usuário fluida.
 
 ---
 
-## 🛠 Stack Tecnológica
+## 📊 Status e Indicadores do Projeto
 
-| Camada | Tecnologia | Versão | Status / Widget |
+<div align="center">
+
+![Status](https://img.shields.io/badge/Status-Em%20Desenvolvimento-4488ff?style=for-the-badge&logo=github)
+![Versão](https://img.shields.io/badge/Versão-1.0.0--beta-blueviolet?style=for-the-badge)
+![Licença](https://img.shields.io/badge/Licença-MIT-orange?style=for-the-badge)
+![Repo Size](https://img.shields.io/github/repo-size/Lowingx/gerenciador-biblioteca-egm?style=for-the-badge&color=333)
+![Last Commit](https://img.shields.io/github/last-commit/Lowingx/gerenciador-biblioteca-egm?style=for-the-badge&color=brightgreen)
+
+</div>
+
+---
+
+## 🛠 Stack Tecnológica Detalhada
+
+| Camada | Tecnologia | Badge | Versão |
 | :--- | :--- | :--- | :--- |
-| **Backend** | Python + FastAPI | 3.11+ / 0.115 | [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com) |
-| **Frontend** | React + TypeScript + Vite | 18+ / 5+ | [![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev) |
-| **Banco** | PostgreSQL + SQLAlchemy + Alembic | 16 / 2.x | [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org) |
-| **DevOps** | GitHub Actions + Docker Compose | - | [![GitHub Actions](https://img.shields.io/badge/CI/CD-2088FF?style=flat-square&logo=github-actions&logoColor=white)](https://github.com/features/actions) |
-| **UI** | Tailwind CSS + shadcn/ui | - | [![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com) |
-| **Testes** | Pytest + Vitest | - | [![Tests](https://img.shields.io/badge/Tests-OK-brightgreen?style=flat-square)](https://docs.pytest.org/) |
+| **Linguagem Backend** | Python | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) | `3.11+` |
+| **Framework API** | FastAPI | ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat-square&logo=fastapi) | `Latest` |
+| **Frontend Core** | React | ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB) | `19.0` |
+| **Tipagem** | TypeScript | ![TS](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white) | `5.0+` |
+| **Build Tool** | Vite | ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) | `6.0` |
+| **Estilização** | Tailwind CSS | ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white) | `3.4+` |
+| **Banco de Dados** | PostgreSQL | ![Postgres](https://img.shields.io/badge/PostgreSQL-316192?style=flat-square&logo=postgresql&logoColor=white) | `16` |
+| **ORM / Migrations** | SQLAlchemy & Alembic | ![DB](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square) | `-` |
+| **Containerização** | Docker | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) | `24+` |
 
 ---
 
-## Estrutura do Repositório
+## 📂 Arquitetura de Pastas
 
 ```text
-.
-├── backend/    # Servidor API e lógica de banco de dados
-├── frontend/   # Aplicação web em React e TypeScript
-├── docs/       # Documentação técnica, diagramas ER e fluxos
-└── scripts/    # Utilitários para automação e deploy
-
+root/
+├── 📂 .github/           # Workflows de CI/CD (GitHub Actions)
+├── 📂 backend/           # API RESTful, Schemas, Models e CRUD
+│   ├── 📂 alembic/       # Controle de migrações do banco
+│   └── 📂 app/           # Core da aplicação Python
+├── 📂 frontend/          # SPA em React com Vite
+│   ├── 📂 src/
+│   │   ├── 📂 components/ # UI Reutilizável
+│   │   └── 📂 hooks/      # Lógica de estado customizada
+├── 📂 docs/              # DER, Diagramas de Fluxo e Backlog
+└── 🐋 docker-compose.yml # Orquestração de serviços (App + DB)
 ```
 
-## Protocolo de Contribuição
+---
 
-    Gestão de Branches: Proibido commits diretos na main. Utilize o padrão tipo/nome-da-tarefa (ex: feat/setup-db).
+## 🚀 Guia de Instalação e Execução
 
-    Revisão de Código: Todo código deve ser submetido via Pull Request (PR) e aprovado.
+### Pré-requisitos
+* **Docker** & **Docker Compose** instalados.
+* **Git** para clonagem.
 
-    Sincronização: Acompanhe o canal #github-issues-prs no Discord para atualizações em tempo real.
+### Procedimento de Inicialização
 
-Documentação Adicional
+```bash
+# 1. Clonagem do repositório via SSH ou HTTPS
+git clone [https://github.com/Lowingx/gerenciador-biblioteca-egm.git](https://github.com/Lowingx/gerenciador-biblioteca-egm.git)
 
-> Consulte a pasta /docs para visualizar o Modelo de Entidade-Relacionamento (DER), o backlog das Sprints e os fluxogramas de processos.
+# 2. Navegação para o diretório raiz
+cd gerenciador-biblioteca-egm
+
+# 3. Build e execução dos containers em background
+docker compose up -d --build
+```
+
+### Portas de Acesso Local
+* 🌐 **Interface Web:** `http://localhost:5173`
+* 🔌 **Documentação API (Swagger):** `http://localhost:8000/docs`
+* 🗃️ **Banco de Dados:** `localhost:5432`
+
+---
+
+## ⚙️ Protocolos de Contribuição e Qualidade
+
+Para garantir a integridade do código e a rastreabilidade das features, adotamos o seguinte fluxo:
+
+### 🔱 Gerenciamento de Branches
+* **`main`**: Apenas código estável e em produção.
+* **`develop`**: Branch de integração. Todo PR deve ser destinado a ela.
+* **`feature/pb-XX-nome`**: Desenvolvimento de novas funcionalidades.
+* **`fix/pb-XX-nome`**: Correção de bugs críticos.
+
+### ✍️ Padrão de Commits (Conventional Commits)
+| Tipo | Descrição |
+| :--- | :--- |
+| `feat:` | Introdução de nova funcionalidade. |
+| `fix:` | Correção de um erro. |
+| `chore:` | Mudanças em ferramentas ou bibliotecas de build. |
+| `refactor:` | Alteração de código que não corrige erro nem adiciona feature. |
+
+---
+
+## 📑 Documentação Técnica Adicional
+
+> [!IMPORTANT]
+> Antes de iniciar qualquer desenvolvimento, revise os documentos na pasta `/docs`:
+> - **Modelo DER:** Definição de chaves estrangeiras e relacionamentos.
+> - **Backlog da Sprint:** Priorização de tarefas vigentes.
+> - **Fluxogramas:** Lógica de negócio para empréstimos e multas.
+
+---
+
+<div align="center">
+
+**GBE - Sistema Licenciado sob a [MIT License](LICENSE)** <br>
+Sincronização via Discord: `#github-issues-prs`
+
+</div>
+
+
