@@ -1,109 +1,114 @@
 <div align="center">
 
 # ⚙️ GBE Backend API
-**Gerenciador de Biblioteca Escolar • High-Performance Core**
+**Core Engine & Gerenciamento de Dados • GBE Project**
 
-[![Python](https://img.shields.io/badge/Python_3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI_0.115+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy_2.0+-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
-[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+*API RESTful de alta performance, assíncrona e resiliente. O motor de regras de negócio responsável pela integridade e segurança do ecossistema GBE.*
 
-*API RESTful assíncrona, leve e blindada. Otimizada para Kiosk Mode em hardware limitado.*
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0.49-D71F00?style=for-the-badge)](https://www.sqlalchemy.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![Alembic](https://img.shields.io/badge/Migrations-Alembic-6BA531?style=for-the-badge)](https://alembic.sqlalchemy.org/)
 
 </div>
 
 ---
 
-## 🎯 Engenharia e Missão
-O backend do GBE foi projetado sob o paradigma de **Arquitetura Limpa**, focado em atomicidade e integridade. A missão é garantir que o sistema de gestão escolar opere com latência mínima, mesmo em tablets de baixa configuração (~2GB RAM).
+## 🏗️ Arquitetura e Engenharia
 
-### Diferenciais de Performance:
-- ⚡ **Async/Await Nativo:** I/O não bloqueante para lidar com múltiplas requisições simultâneas.
-- 📉 **Low Memory Footprint:** Gerenciamento eficiente de sessões de banco para evitar vazamentos de memória.
-- 🔐 **JWT Stateless:** Autenticação via tokens, reduzindo consultas repetitivas ao banco de dados.
-- 📦 **Pydantic V2:** Validação de dados processada em Rust para velocidade máxima.
+O backend foi projetado sob o paradigma de **Clean Architecture**, garantindo que a lógica de negócio seja independente de frameworks e drivers externos.
 
----
-
-## 🛠️ Stack Tecnológica
-
-| Componente | Tecnologia | Justificativa de Performance |
+| Componente | Tecnologia | Finalidade Técnica |
 | :--- | :--- | :--- |
-| **Linguagem** | Python 3.11+ | Uso de *Type Hinting* para redução de erros em runtime. |
-| **Framework** | FastAPI | O framework Python mais rápido da atualidade (benchmark Starlette). |
+| **Framework** | FastAPI | I/O não bloqueante e validação de dados via Rust (Pydantic v2). |
+| **ORM** | SQLAlchemy | Mapeamento declarativo assíncrono para alta concorrência. |
+| **Migrações** | Alembic | Versionamento de esquema e controle de evolução do banco. |
+| **Segurança** | JWT & Passlib | Autenticação Stateless e criptografia de senhas (BCrypt). |
 | **Servidor** | Uvicorn | Servidor ASGI de baixíssima latência baseado em `uvloop`. |
-| **ORM** | SQLAlchemy 2.0 | Mapeamento assíncrono para evitar gargalos em consultas complexas. |
-| **Database** | SQLite/Postgres | Portabilidade total: do banco local ultra-leve ao robusto. |
 
 ---
 
-## 🛣️ API Reference (Principais Endpoints)
-
-Documentação completa e testável disponível em: `http://localhost:8000/docs`
-
-| Método | Endpoint | Função | Payload Exemplo |
-| :---: | :--- | :--- | :--- |
-| `POST` | `/auth/login` | Geração de Token JWT | `{"ra": "123", "senha": "..."}` |
-| `GET` | `/books` | Catálogo com busca otimizada | `?q=Harry&limit=10` |
-| `POST` | `/loans` | Registro de empréstimo (Atômico) | `{"book_id": 1, "ra": "123"}` |
-| `PATCH` | `/loans/{id}` | Processamento de devolução | `{"status": "returned"}` |
-
----
-
-## 📂 Arquitetura de Pastas (Standard Layout)
+## 📂 Estrutura do Módulo Backend
 
 ```text
-gbe-backend/
-├── app/
-│   ├── api/                # Camada de Transporte (Rotas e Versões)
-│   ├── core/               # Segurança (JWT), Configurações e Logs
-│   ├── crud/               # Lógica de persistência e regras de negócio
-│   ├── models/             # Tabelas do banco (SQLAlchemy Models)
-│   ├── schemas/            # Contratos de dados (Pydantic DTOs)
-│   └── db/                 # Conexão assíncrona e Engine do banco
-├── alembic/                # Histórico de migrações e versionamento
-├── Dockerfile              # Imagem otimizada para deploy rápido
-├── requirements.txt        # Dependências fixadas
-└── README.md               # Você está aqui
+backend/
+├── 📂 alembic/          # Histórico de versões e migrações do banco
+├── 📂 app/              # Core da aplicação
+│   ├── 📂 api/          # Endpoints e roteamento (v1)
+│   ├── 📂 core/         # Configurações globais e segurança (JWT)
+│   ├── 📂 crud/         # Lógica de persistência (Service Layer)
+│   ├── 📂 models/       # Entidades do SQLAlchemy (Banco de Dados)
+│   ├── 📂 schemas/      # DTOs e Contratos Pydantic (Validação)
+│   └── 📂 db/           # Session management e engine assíncrona
+├── 📄 main.py           # Entrypoint da aplicação FastAPI
+├── 📄 alembic.ini       # Configuração do ambiente de migração
+└── 📄 requirements.txt  # Manifesto de dependências fixadas
 ```
 
 ---
 
-## 🚀 Como Executar (Modo Desenvolvedor)
+## 🚀 Setup de Desenvolvimento (Local)
 
-### 1. Preparação do Ambiente
+Para rodar o backend fora do Docker (para debug rápido):
+
+### 1. Ambiente Virtual e Dependências
 ```bash
-# Clone e entre no diretório
-git clone <url-do-repositorio>
-cd gerenciador-biblioteca-escolar
+# Navegar até a pasta
+cd backend
 
-# Crie e ative o ambiente virtual
+# Criar venv
 python -m venv venv
 source venv/bin/activate  # Linux/macOS
 # venv\Scripts\activate   # Windows
 
-# Instale as dependências
+# Instalar pacotes
 pip install -r requirements.txt
 ```
 
-### 2. Banco de Dados e Start
+### 2. Sincronização do Banco
 ```bash
-# Aplique as migrações (Criação do esquema)
+# Rodar migrações pendentes
 alembic upgrade head
 
-# Inicialize o servidor ASGI
+# Iniciar servidor em modo hot-reload
 uvicorn app.main:app --reload --port 8000
 ```
 
+> 🔌 **Swagger Docs:** Acesse `http://localhost:8000/docs` para testar os endpoints em tempo real.
+
 ---
 
-## ✨ Roadmap de Desenvolvimento
+## 🛡️ Padrões de Segurança e Contratos
+
+> [!IMPORTANT]
+> Todas as rotas de escrita (`POST`, `PUT`, `DELETE`) exigem obrigatoriamente o header `Authorization: Bearer <token>`.
+
+### Formato de Resposta Padrão (JSON)
+As rotas seguem a especificação de status HTTP correta:
+- **201 Created**: Sucesso na criação de recursos (Livros/Alunos).
+- **400 Bad Request**: Erro de validação de schema (Pydantic).
+- **401 Unauthorized**: Token expirado ou ausente.
+- **404 Not Found**: Recurso inexistente no banco.
+
+---
+
+## 📊 Plano de Evolução (Backlog Backend)
 
 - [ ] Implementação de **Inlay Hints** para clareza no desenvolvimento.
 - [ ] Otimização de queries para evitar o problema de **N+1 queries**.
 - [ ] Middlewares de **Rate Limiting** para segurança local.
-- [ ] Sistema de backup automático do banco `database.db`.
+- [ ] Logs estruturados em formato JSON para monitoramento Docker.
+
+---
+
+<div align="center">
+
+**GBE Backend - Desenvolvido para Escabilidade e Performance** <br>
+Sincronização via Discord: `#banco-de-dados` e `backend-core`
+
+</div>
+
 ---
 <div align="center">
   <sub><strong>GBE Project</strong> • Sistema de Gestão de Bibliotecas Escolar</sub>
