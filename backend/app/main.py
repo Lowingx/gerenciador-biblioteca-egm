@@ -7,12 +7,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    openapi_url="/openapi.json",
-    openapi_tags=[
-        {"name": "livros", "description": "Operações com livros"},
-        {"name": "usuarios", "description": "Operações com usuários"},
-        {"name": "emprestimos", "description": "Empréstimos e devoluções"}
-    ]
+    openapi_url="/openapi.json"
 )
 
 app.add_middleware(
