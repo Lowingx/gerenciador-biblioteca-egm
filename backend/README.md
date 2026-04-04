@@ -1,126 +1,97 @@
-<div align="center">
+# Especificação Técnica: GBE Backend API
+**Sistema de Gerenciamento de Biblioteca Escolar**
 
-# ⚙️ GBE Backend
-**Gerenciador de Biblioteca Escolar • Core API & Database**
-
-[![Python](https://img.shields.io/badge/Python_3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI_0.115+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy_2.0+-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
-[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-
-*API RESTful leve, segura e performática. O motor de regras de negócio do GBE.*
-
-</div>
+A API do GBE foi concebida sob o paradigma de **Arquitetura Limpa (Clean Architecture)**, priorizando o baixo consumo de recursos computacionais e a alta disponibilidade em redes locais. Este documento detalha a infraestrutura, os contratos de dados e os padrões de implementação do core do sistema.
 
 ---
 
-## 🎯 A Missão do Backend
+## 1. Visão Geral do Sistema
+O Backend atua como o núcleo de processamento e persistência do GBE, expondo uma interface RESTful para o consumo do Frontend. O design é focado na atomicidade das operações e na integridade referencial dos dados da biblioteca.
 
-Enquanto o Frontend foca na experiência, o Backend do GBE garante que os dados nunca falhem. Construímos uma **API simples, rápida e segura**, projetada especificamente para rodar sem gargalos em servidores locais e tablets escolares com baixa configuração (~2GB RAM).
-
-Nossos superpoderes incluem:
-- 🔐 **Autenticação Direta:** Cadastro e login via Registro Acadêmico (RA/Matrícula).
-- 📚 **Gestão Inteligente:** Controle rigoroso de alunos, livros e multas.
-- 🔄 **Motor de Fluxo:** Lógica blindada para empréstimos, devoluções e cálculo de atrasos.
-- ⚡ **Respostas em Milissegundos:** Processamento assíncrono garantindo fluidez no Kiosk Mode.
+### Premissas de Engenharia:
+* **Eficiência de Memória:** Otimização para instâncias de baixa performance (Kiosk Mode).
+* **Persistência Híbrida:** Suporte nativo a SQLite (desenvolvimento) e PostgreSQL (produção).
+* **Concorrência:** Gerenciamento de múltiplas requisições via `asyncio`.
+* **Escalabilidade Horizontal:** Preparado para execução em containers isolados.
 
 ---
 
-## 🛠️ Stack Tecnológica
+## 2. Stack Tecnológica
 
-O ecossistema Python moderno foi escolhido para garantir estabilidade e tipagem rigorosa:
-
-| Tecnologia | Versão | Responsabilidade na Arquitetura 🏗️ |
+| Componente | Tecnologia | Especificação Técnica |
 | :--- | :--- | :--- |
-| **Python** | `3.11+` | A linguagem principal. Clara, legível e poderosa. |
-| **FastAPI** | `0.115+` | Framework da API. Roteamento ultrarrápido e documentação automática. |
-| **Uvicorn** | `0.34+` | Servidor ASGI de alta performance. |
-| **SQLAlchemy** | `2.0+` | ORM robusto para comunicação segura com o banco de dados. |
-| **Pydantic** | `2.10+` | Validação estrita de dados e tipagem de payloads. |
-| **Alembic** | `1.14+` | Versionamento e migrações do banco de dados. |
-| **SQLite / PostgreSQL** | `-` | SQLite para dev rápido. PostgreSQL para a robustez de produção. |
+| **Linguagem** | Python 3.11+ | Suporte a Type Hinting e bibliotecas assíncronas. |
+| **Framework** | FastAPI | Baseado em Starlette e Pydantic; geração automática de OpenAPI. |
+| **ORM** | SQLAlchemy 2.0 | Mapeamento Objeto-Relacional com suporte a Async Drivers. |
+| **Migrações** | Alembic | Controle de versionamento de esquema e integridade de transição. |
+| **Validação** | Pydantic v2 | Serialização de dados em Rust Core para alta performance. |
+| **Servidor** | Uvicorn | Servidor ASGI de baixa latência baseado em `uvloop`. |
 
 ---
 
-## 📂 Arquitetura de Pastas
+## 3. Arquitetura de Dados (Modelo de Entidade-Relacionamento)
 
-Estrutura limpa e escalável, separando rotas de modelos e regras de negócio:
+O banco de dados segue a normalização de terceira forma (3NF) para garantir a performance de consultas e evitar inconsistências.
+
+* **User/Student:** Matrícula (PK), Nome, E-mail, Hash de Senha, Status (Ativo/Inativo).
+* **Book:** ISBN (PK), Título, Autor, Categoria, Exemplares Disponíveis.
+* **Loan (Empréstimo):** ID (PK), User_ID (FK), Book_ID (FK), Data_Emprestimo, Data_Previsao_Devolucao, Status.
+
+---
+
+## 4. API Reference (Contratos de Dados)
+
+### Autenticação
+| Endpoint | Método | Descrição | Requisito |
+| :--- | :--- | :--- | :--- |
+| `/auth/login` | `POST` | Geração de Token JWT. | RA e Senha |
+
+### Gestão de Acervo e Operações
+| Endpoint | Método | Descrição | Parâmetros |
+| :--- | :--- | :--- | :--- |
+| `/books` | `GET` | Listagem com paginação e busca. | `q, page, size` |
+| `/loans` | `POST` | Registro de novo empréstimo. | `ra, book_id` |
+| `/loans/{id}/return` | `PATCH` | Processamento de devolução. | `id (path)` |
+
+---
+
+## 5. Estrutura do Repositório (Standard Layout)
+
+A organização segue padrões de escalabilidade, separando a lógica de negócio da infraestrutura de transporte.
 
 ```text
-gerenciador-biblioteca-escolar/
+gbe-backend/
 ├── app/
-│   └── main.py               # ↳ Ponto de entrada da aplicação FastAPI
-├── alembic.ini               # Configurações do versionamento de banco
-├── Dockerfile                # Container isolado para o backend
-├── pyproject.toml            # Configuração master do projeto
-├── requirements.txt          # Cadeia de dependências (pip)
-├── database.db               # Banco de dados local (ignorado no git)
-└── README.md                 # Você está aqui
+│   ├── api/                # Camada de Transporte (Rotas e Versões)
+│   ├── core/               # Configurações globais e Segurança (JWT)
+│   ├── crud/               # Lógica de persistência e regras de negócio
+│   ├── models/             # Definição de tabelas (SQLAlchemy Models)
+│   ├── schemas/            # DTOs e Contratos Pydantic
+│   ├── db/                 # Conexão assíncrona e sessões
+│   └── main.py             # Entrypoint da aplicação
+├── alembic/                # Versionamento do Banco de Dados
+├── tests/                  # Testes unitários e de integração
+├── Dockerfile              # Containerização do serviço
+├── requirements.txt        # Manifesto de dependências fixadas
+└── pyproject.toml          # Configuração de Ferramentas (Black, Mypy)
 ```
 
 ---
 
-## 🚀 Como Executar o Backend
+## 6. Procedimentos de Deployment e Qualidade
 
-Levantar o servidor na sua máquina é um processo de poucos passos.
+### Inicialização do Ambiente
+1.  **Isolamento:** `python -m venv venv`
+2.  **Dependências:** `pip install -r requirements.txt`
+3.  **Database:** `alembic upgrade head`
+4.  **Execução:** `uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload`
 
-### 💻 Método Padrão (Ambiente Virtual)
-
-```bash
-# 1. Clone o repositório e acesse a pasta
-git clone <url-do-repositorio>
-cd gerenciador-biblioteca-escolar
-
-# 2. Crie e ative o ambiente virtual
-python -m venv venv
-source venv/bin/activate  # Linux / macOS
-# venv\Scripts\activate   # Windows
-
-# 3. Instale as dependências da API
-pip install -r requirements.txt
-
-# 4. Rode as migrações para criar o banco (Apenas na primeira vez)
-alembic upgrade head
-
-# 5. Dê a ignição no servidor
-uvicorn app.main:app --reload --port 8000
-```
-
-> 📡 **A API estará viva em:** `http://127.0.0.1:8000`
-> 📖 **Swagger (Docs interativos):** `http://127.0.0.1:8000/docs`
-
-### 🐳 Método Elite (Docker)
-Recomendado para testar o ambiente real de produção sem instalar dependências na máquina:
-```bash
-docker-compose up --build
-```
+### Monitoramento e Logs
+* Implementação de logs estruturados em formato JSON.
+* Documentação automática acessível em `/docs` (Swagger UI).
+* Middlewares de segurança para controle de CORS e Rate Limiting.
 
 ---
-
-## ✨ Status do Desenvolvimento (Backlog)
-
-Nosso motor está em construção contínua. Próximos commits:
-
-- [ ] Modelos SQLAlchemy definitivos (Aluno, Livro, Empréstimo).
-- [ ] Sistema de autenticação blindado por matrícula.
-- [ ] CRUD completo (Livros, Alunos, Empréstimos).
-- [ ] Implementação das regras de negócio de empréstimo/devolução.
-- [ ] Rotas protegidas via dependências nativas do FastAPI.
-- [ ] Migrações Alembic estruturadas.
-- [ ] Bateria de testes unitários básicos (Pytest).
-
----
-
-## 👥 Esquadrão de Dados (Responsáveis)
-
-Código construído e mantido por:
-- **Giovanna** 👩‍💻 → Arquitetura Backend & Criação de DB
-- **Miguel** 👨‍💻 → Arquitetura Backend & Criação de DB
-- **Fabrício** 👨‍💻 → Estruturação do Banco de Dados
-- **Ícaro** 👨‍💻 → Backend Core & Auxílio Técnico
-- **Evy** 👑 → Supervisão Geral e Code Review
-
 <div align="center">
-  <sub>Lógica implacável. Sem N+1 queries. Feito para o GBE. 🚀</sub>
+  <sub>GBE Backend - Documentação Técnica Oficial</sub>
 </div>
