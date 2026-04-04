@@ -113,3 +113,7 @@ Sincronização via Discord: `#github-issues-prs`
 
 </div>
 
+---
+<div align="center">
+  <sub><strong>GBE Project</strong> • Sistema de Gestão de Bibliotecas Escolar</sub>
+</div>
