@@ -104,7 +104,7 @@ uvicorn app.main:app --reload --port 8000
 - [ ] Otimização de queries para evitar o problema de **N+1 queries**.
 - [ ] Middlewares de **Rate Limiting** para segurança local.
 - [ ] Sistema de backup automático do banco `database.db`.
-
+---
 <div align="center">
-  <sub>Lógica implacável. Sem gargalos. Feito para o GBE. 🚀</sub>
+  <sub><strong>GBE Project</strong> • Sistema de Gestão de Bibliotecas Escolar</sub>
 </div>
