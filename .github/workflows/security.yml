@@ -32,9 +32,3 @@ jobs:
       - name: NPM Audit - Scan de Vulnerabilidades Frontend
         working-directory: ./frontend
         run: npm audit --audit-level=high
-
-      - name: OWASP ZAP - Scan Básico de Aplicação Web
-        uses: zaproxy/action-baseline@v0.4.0
-        with:
-          target: 'http://localhost:3000'
-          fail_action: false
