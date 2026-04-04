@@ -1,97 +1,110 @@
-# Especificação Técnica: GBE Backend API
-**Sistema de Gerenciamento de Biblioteca Escolar**
+<div align="center">
 
-A API do GBE foi concebida sob o paradigma de **Arquitetura Limpa (Clean Architecture)**, priorizando o baixo consumo de recursos computacionais e a alta disponibilidade em redes locais. Este documento detalha a infraestrutura, os contratos de dados e os padrões de implementação do core do sistema.
+# ⚙️ GBE Backend API
+**Gerenciador de Biblioteca Escolar • High-Performance Core**
+
+[![Python](https://img.shields.io/badge/Python_3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI_0.115+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy_2.0+-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
+[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+
+*API RESTful assíncrona, leve e blindada. Otimizada para Kiosk Mode em hardware limitado.*
+
+</div>
 
 ---
 
-## 1. Visão Geral do Sistema
-O Backend atua como o núcleo de processamento e persistência do GBE, expondo uma interface RESTful para o consumo do Frontend. O design é focado na atomicidade das operações e na integridade referencial dos dados da biblioteca.
+## 🎯 Engenharia e Missão
+O backend do GBE foi projetado sob o paradigma de **Arquitetura Limpa**, focado em atomicidade e integridade. A missão é garantir que o sistema de gestão escolar opere com latência mínima, mesmo em tablets de baixa configuração (~2GB RAM).
 
-### Premissas de Engenharia:
-* **Eficiência de Memória:** Otimização para instâncias de baixa performance (Kiosk Mode).
-* **Persistência Híbrida:** Suporte nativo a SQLite (desenvolvimento) e PostgreSQL (produção).
-* **Concorrência:** Gerenciamento de múltiplas requisições via `asyncio`.
-* **Escalabilidade Horizontal:** Preparado para execução em containers isolados.
+### Diferenciais de Performance:
+- ⚡ **Async/Await Nativo:** I/O não bloqueante para lidar com múltiplas requisições simultâneas.
+- 📉 **Low Memory Footprint:** Gerenciamento eficiente de sessões de banco para evitar vazamentos de memória.
+- 🔐 **JWT Stateless:** Autenticação via tokens, reduzindo consultas repetitivas ao banco de dados.
+- 📦 **Pydantic V2:** Validação de dados processada em Rust para velocidade máxima.
 
 ---
 
-## 2. Stack Tecnológica
+## 🛠️ Stack Tecnológica
 
-| Componente | Tecnologia | Especificação Técnica |
+| Componente | Tecnologia | Justificativa de Performance |
 | :--- | :--- | :--- |
-| **Linguagem** | Python 3.11+ | Suporte a Type Hinting e bibliotecas assíncronas. |
-| **Framework** | FastAPI | Baseado em Starlette e Pydantic; geração automática de OpenAPI. |
-| **ORM** | SQLAlchemy 2.0 | Mapeamento Objeto-Relacional com suporte a Async Drivers. |
-| **Migrações** | Alembic | Controle de versionamento de esquema e integridade de transição. |
-| **Validação** | Pydantic v2 | Serialização de dados em Rust Core para alta performance. |
-| **Servidor** | Uvicorn | Servidor ASGI de baixa latência baseado em `uvloop`. |
+| **Linguagem** | Python 3.11+ | Uso de *Type Hinting* para redução de erros em runtime. |
+| **Framework** | FastAPI | O framework Python mais rápido da atualidade (benchmark Starlette). |
+| **Servidor** | Uvicorn | Servidor ASGI de baixíssima latência baseado em `uvloop`. |
+| **ORM** | SQLAlchemy 2.0 | Mapeamento assíncrono para evitar gargalos em consultas complexas. |
+| **Database** | SQLite/Postgres | Portabilidade total: do banco local ultra-leve ao robusto. |
 
 ---
 
-## 3. Arquitetura de Dados (Modelo de Entidade-Relacionamento)
+## 🛣️ API Reference (Principais Endpoints)
 
-O banco de dados segue a normalização de terceira forma (3NF) para garantir a performance de consultas e evitar inconsistências.
+Documentação completa e testável disponível em: `http://localhost:8000/docs`
 
-* **User/Student:** Matrícula (PK), Nome, E-mail, Hash de Senha, Status (Ativo/Inativo).
-* **Book:** ISBN (PK), Título, Autor, Categoria, Exemplares Disponíveis.
-* **Loan (Empréstimo):** ID (PK), User_ID (FK), Book_ID (FK), Data_Emprestimo, Data_Previsao_Devolucao, Status.
-
----
-
-## 4. API Reference (Contratos de Dados)
-
-### Autenticação
-| Endpoint | Método | Descrição | Requisito |
-| :--- | :--- | :--- | :--- |
-| `/auth/login` | `POST` | Geração de Token JWT. | RA e Senha |
-
-### Gestão de Acervo e Operações
-| Endpoint | Método | Descrição | Parâmetros |
-| :--- | :--- | :--- | :--- |
-| `/books` | `GET` | Listagem com paginação e busca. | `q, page, size` |
-| `/loans` | `POST` | Registro de novo empréstimo. | `ra, book_id` |
-| `/loans/{id}/return` | `PATCH` | Processamento de devolução. | `id (path)` |
+| Método | Endpoint | Função | Payload Exemplo |
+| :---: | :--- | :--- | :--- |
+| `POST` | `/auth/login` | Geração de Token JWT | `{"ra": "123", "senha": "..."}` |
+| `GET` | `/books` | Catálogo com busca otimizada | `?q=Harry&limit=10` |
+| `POST` | `/loans` | Registro de empréstimo (Atômico) | `{"book_id": 1, "ra": "123"}` |
+| `PATCH` | `/loans/{id}` | Processamento de devolução | `{"status": "returned"}` |
 
 ---
 
-## 5. Estrutura do Repositório (Standard Layout)
-
-A organização segue padrões de escalabilidade, separando a lógica de negócio da infraestrutura de transporte.
+## 📂 Arquitetura de Pastas (Standard Layout)
 
 ```text
 gbe-backend/
 ├── app/
 │   ├── api/                # Camada de Transporte (Rotas e Versões)
-│   ├── core/               # Configurações globais e Segurança (JWT)
+│   ├── core/               # Segurança (JWT), Configurações e Logs
 │   ├── crud/               # Lógica de persistência e regras de negócio
-│   ├── models/             # Definição de tabelas (SQLAlchemy Models)
-│   ├── schemas/            # DTOs e Contratos Pydantic
-│   ├── db/                 # Conexão assíncrona e sessões
-│   └── main.py             # Entrypoint da aplicação
-├── alembic/                # Versionamento do Banco de Dados
-├── tests/                  # Testes unitários e de integração
-├── Dockerfile              # Containerização do serviço
-├── requirements.txt        # Manifesto de dependências fixadas
-└── pyproject.toml          # Configuração de Ferramentas (Black, Mypy)
+│   ├── models/             # Tabelas do banco (SQLAlchemy Models)
+│   ├── schemas/            # Contratos de dados (Pydantic DTOs)
+│   └── db/                 # Conexão assíncrona e Engine do banco
+├── alembic/                # Histórico de migrações e versionamento
+├── Dockerfile              # Imagem otimizada para deploy rápido
+├── requirements.txt        # Dependências fixadas
+└── README.md               # Você está aqui
 ```
 
 ---
 
-## 6. Procedimentos de Deployment e Qualidade
+## 🚀 Como Executar (Modo Desenvolvedor)
 
-### Inicialização do Ambiente
-1.  **Isolamento:** `python -m venv venv`
-2.  **Dependências:** `pip install -r requirements.txt`
-3.  **Database:** `alembic upgrade head`
-4.  **Execução:** `uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload`
+### 1. Preparação do Ambiente
+```bash
+# Clone e entre no diretório
+git clone <url-do-repositorio>
+cd gerenciador-biblioteca-escolar
 
-### Monitoramento e Logs
-* Implementação de logs estruturados em formato JSON.
-* Documentação automática acessível em `/docs` (Swagger UI).
-* Middlewares de segurança para controle de CORS e Rate Limiting.
+# Crie e ative o ambiente virtual
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+# venv\Scripts\activate   # Windows
+
+# Instale as dependências
+pip install -r requirements.txt
+```
+
+### 2. Banco de Dados e Start
+```bash
+# Aplique as migrações (Criação do esquema)
+alembic upgrade head
+
+# Inicialize o servidor ASGI
+uvicorn app.main:app --reload --port 8000
+```
 
 ---
+
+## ✨ Roadmap de Desenvolvimento
+
+- [ ] Implementação de **Inlay Hints** para clareza no desenvolvimento.
+- [ ] Otimização de queries para evitar o problema de **N+1 queries**.
+- [ ] Middlewares de **Rate Limiting** para segurança local.
+- [ ] Sistema de backup automático do banco `database.db`.
+
 <div align="center">
-  <sub>GBE Backend - Documentação Técnica Oficial</sub>
+  <sub>Lógica implacável. Sem gargalos. Feito para o GBE. 🚀</sub>
 </div>
