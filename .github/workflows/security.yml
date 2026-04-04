@@ -1,0 +1,40 @@
+name: GBE - Security Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trivy - Scan de Vulnerabilidades (Código + Dependências)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: Bandit - Scan de Segurança Python (Backend)
+        uses: tj-actions/bandit@v1
+        with:
+          path: './backend'
+
+      - name: NPM Audit - Scan de Vulnerabilidades Frontend
+        working-directory: ./frontend
+        run: npm audit --audit-level=high
+
+      - name: OWASP ZAP - Scan Básico de Aplicação Web
+        uses: zaproxy/action-baseline@v0.4.0
+        with:
+          target: 'http://localhost:3000'
+          fail_action: false
