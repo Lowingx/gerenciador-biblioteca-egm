@@ -105,7 +105,7 @@ As rotas seguem a especificação de status HTTP correta:
 <div align="center">
 
 **GBE Backend - Desenvolvido para Escabilidade e Performance** <br>
-Sincronização via Discord: `#github-issues-prs`
+Sincronização via Discord: `#banco-de-dados` e `backend-core`
 
 </div>
 
