@@ -1,114 +1,110 @@
 <div align="center">
 
-# 📚 Gerenciador de Biblioteca GBE
-**Sistema Inteligente de Gestão para Bibliotecas Escolares**
+# ⚙️ GBE Backend API
+**Core Engine & Gerenciamento de Dados • GBE Project**
 
-*Uma plataforma Full-Stack de alto desempenho desenvolvida para modernizar a administração de bibliotecas, garantindo integridade de dados e latência zero.*
+*API RESTful de alta performance, assíncrona e resiliente. O motor de regras de negócio responsável pela integridade e segurança do ecossistema GBE.*
 
-[![Status](https://img.shields.io/badge/Status-Em%20Desenvolvimento-0052cc?style=for-the-badge&logo=github)](https://github.com/Lowingx/gerenciador-biblioteca-egm)
-[![Versão](https://img.shields.io/badge/Versão-1.0.0--beta-blueviolet?style=for-the-badge)](https://github.com/Lowingx/gerenciador-biblioteca-egm)
-[![Repo Size](https://img.shields.io/github/repo-size/Lowingx/gerenciador-biblioteca-egm?style=for-the-badge&color=2ea043)](https://github.com/Lowingx/gerenciador-biblioteca-egm)
-[![Last Commit](https://img.shields.io/github/last-commit/Lowingx/gerenciador-biblioteca-egm?style=for-the-badge&color=e34c26)](https://github.com/Lowingx/gerenciador-biblioteca-egm/commits/develop)
-[![Licença](https://img.shields.io/badge/Licença-MIT-orange?style=for-the-badge)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0.49-D71F00?style=for-the-badge)](https://www.sqlalchemy.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![Alembic](https://img.shields.io/badge/Migrations-Alembic-6BA531?style=for-the-badge)](https://alembic.sqlalchemy.org/)
 
 </div>
 
 ---
 
-## 🛠 Stack Tecnológica Detalhada
+## 🏗️ Arquitetura e Engenharia
 
-| Camada | Tecnologia | Badge | Versão |
-| :--- | :--- | :--- | :--- |
-| **Backend** | Python | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) | `3.11+` |
-| **API Rest** | FastAPI | ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat-square&logo=fastapi) | `Latest` |
-| **Frontend** | React | ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB) | `19.0` |
-| **Tipagem** | TypeScript | ![TS](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white) | `5.0+` |
-| **Build Tool**| Vite | ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) | `6.0` |
-| **Interface** | Tailwind CSS | ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white) | `3.4+` |
-| **Database** | PostgreSQL | ![Postgres](https://img.shields.io/badge/PostgreSQL-316192?style=flat-square&logo=postgresql&logoColor=white) | `16` |
-| **ORM** | SQLAlchemy & Alembic | ![DB](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square) | `2.0.49` |
-| **DevOps** | Docker | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) | `24+` |
+O backend foi projetado sob o paradigma de **Clean Architecture**, garantindo que a lógica de negócio seja independente de frameworks e drivers externos.
+
+| Componente | Tecnologia | Finalidade Técnica |
+| :--- | :--- | :--- |
+| **Framework** | FastAPI | I/O não bloqueante e validação de dados via Rust (Pydantic v2). |
+| **ORM** | SQLAlchemy | Mapeamento declarativo assíncrono para alta concorrência. |
+| **Migrações** | Alembic | Versionamento de esquema e controle de evolução do banco. |
+| **Segurança** | JWT & Passlib | Autenticação Stateless e criptografia de senhas (BCrypt). |
+| **Servidor** | Uvicorn | Servidor ASGI de baixíssima latência baseado em `uvloop`. |
 
 ---
 
-## 📂 Arquitetura de Pastas
+## 📂 Estrutura do Módulo Backend
 
 ```text
-root/
-├── 📂 .github/           # Workflows de CI/CD (GitHub Actions)
-├── 📂 backend/           # API RESTful, Schemas, Models e CRUD
-│   ├── 📂 alembic/       # Controle de migrações do banco
-│   └── 📂 app/           # Core da aplicação Python
-├── 📂 frontend/          # SPA em React com Vite
-│   ├── 📂 src/
-│   │   ├── 📂 components/ # UI Reutilizável
-│   │   └── 📂 hooks/      # Lógica de estado customizada
-├── 📂 docs/              # DER, Diagramas de Fluxo e Backlog
-└── 🐋 docker-compose.yml # Orquestração de serviços (App + DB)
+backend/
+├── 📂 alembic/          # Histórico de versões e migrações do banco
+├── 📂 app/              # Core da aplicação
+│   ├── 📂 api/          # Endpoints e roteamento (v1)
+│   ├── 📂 core/         # Configurações globais e segurança (JWT)
+│   ├── 📂 crud/         # Lógica de persistência (Service Layer)
+│   ├── 📂 models/       # Entidades do SQLAlchemy (Banco de Dados)
+│   ├── 📂 schemas/      # DTOs e Contratos Pydantic (Validação)
+│   └── 📂 db/           # Session management e engine assíncrona
+├── 📄 main.py           # Entrypoint da aplicação FastAPI
+├── 📄 alembic.ini       # Configuração do ambiente de migração
+└── 📄 requirements.txt  # Manifesto de dependências fixadas
 ```
 
 ---
 
-## 🚀 Guia de Instalação e Execução
+## 🚀 Setup de Desenvolvimento (Local)
 
-### Pré-requisitos
-* **Docker** & **Docker Compose** instalados.
-* **Git** para clonagem.
+Para rodar o backend fora do Docker (para debug rápido):
 
-### Procedimento de Inicialização
-
+### 1. Ambiente Virtual e Dependências
 ```bash
-# 1. Clonagem do repositório
-git clone https://github.com/Lowingx/gerenciador-biblioteca-egm.git
+# Navegar até a pasta
+cd backend
 
-# 2. Navegação para o diretório raiz
-cd gerenciador-biblioteca-egm
+# Criar venv
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+# venv\Scripts\activate   # Windows
 
-# 3. Build e execução dos containers em background
-docker compose up -d --build
+# Instalar pacotes
+pip install -r requirements.txt
 ```
 
-### Portas de Acesso Local
-* 🌐 **Interface Web:** `http://localhost:5173`
-* 🔌 **Documentação API (Swagger):** `http://localhost:8000/docs`
-* 🗃️ **Banco de Dados:** `localhost:5432` 
+### 2. Sincronização do Banco
+```bash
+# Rodar migrações pendentes
+alembic upgrade head
+
+# Iniciar servidor em modo hot-reload
+uvicorn app.main:app --reload --port 8000
+```
+
+> 🔌 **Swagger Docs:** Acesse `http://localhost:8000/docs` para testar os endpoints em tempo real.
 
 ---
 
-## ⚙️ Protocolos de Contribuição e Qualidade
-
-> [!CAUTION]
-> **Acesso Restrito:** Push direto na `main` é estritamente proibido. Toda integração deve ocorrer obrigatoriamente via Pull Request para a branch `develop`.
-
-### 🔱 Gerenciamento de Branches
-* **`main`**: Apenas código estável e em produção.
-* **`develop`**: Branch principal de integração.
-* **`feature/pb-XX-nome`**: Desenvolvimento de novas funcionalidades.
-* **`fix/pb-XX-nome`**: Correção de bugs críticos.
-
-### ✍️ Padrão de Commits (Conventional Commits)
-| Tipo | Descrição |
-| :--- | :--- |
-| `feat:` | Introdução de nova funcionalidade. |
-| `fix:` | Correção de um erro em produção ou desenvolvimento. |
-| `chore:` | Mudanças em ferramentas ou bibliotecas de build. |
-| `refactor:` | Alteração de código que não corrige erro nem adiciona feature. |
-
----
-
-## 📑 Documentação Técnica Adicional
+## 🛡️ Padrões de Segurança e Contratos
 
 > [!IMPORTANT]
-> Antes de iniciar qualquer desenvolvimento, revise os documentos na pasta `/docs`:
-> - **Modelo DER:** Definição de chaves estrangeiras e relacionamentos.
-> - **Backlog da Sprint:** Priorização de tarefas vigentes.
-> - **Fluxogramas:** Lógica de negócio para empréstimos e multas.
+> Todas as rotas de escrita (`POST`, `PUT`, `DELETE`) exigem obrigatoriamente o header `Authorization: Bearer <token>`.
+
+### Formato de Resposta Padrão (JSON)
+As rotas seguem a especificação de status HTTP correta:
+- **201 Created**: Sucesso na criação de recursos (Livros/Alunos).
+- **400 Bad Request**: Erro de validação de schema (Pydantic).
+- **401 Unauthorized**: Token expirado ou ausente.
+- **404 Not Found**: Recurso inexistente no banco.
+
+---
+
+## 📊 Plano de Evolução (Backlog Backend)
+
+- [ ] Implementação de **Inlay Hints** para clareza no desenvolvimento.
+- [ ] Otimização de queries para evitar o problema de **N+1 queries**.
+- [ ] Middlewares de **Rate Limiting** para segurança local.
+- [ ] Logs estruturados em formato JSON para monitoramento Docker.
 
 ---
 
 <div align="center">
 
-**GBE - Sistema Licenciado sob a [MIT License](LICENSE)** <br>
+**GBE Backend - Desenvolvido para Escabilidade e Performance** <br>
 Sincronização via Discord: `#github-issues-prs`
 
 </div>
