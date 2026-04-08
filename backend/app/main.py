@@ -1,3 +1,7 @@
+# ────────────────────────────────────────────────────────────
+# - Responsável por inicializar a API, definir rotas
+# ────────────────────────────────────────────────────────────
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers.livros import router as livros_router
