@@ -59,7 +59,7 @@ root/
 
 ```bash
 # 1. Clonagem do repositório
-git clone [https://github.com/Lowingx/gerenciador-biblioteca-egm.git](https://github.com/Lowingx/gerenciador-biblioteca-egm.git)
+git clone https://github.com/Lowingx/gerenciador-biblioteca-egm.git
 
 # 2. Navegação para o diretório raiz
 cd gerenciador-biblioteca-egm
