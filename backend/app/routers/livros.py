@@ -1,8 +1,3 @@
-# ────────────────────────────────────────────────────────────
-# - Recebe os dados validados pelo schema LivroCreate
-# - Retorna o livro criado seguindo o schema LivroResponse
-# ────────────────────────────────────────────────────────────
-
 from fastapi import APIRouter
 from typing import List
 from app.schemas.livro import LivroCreate, LivroResponse
