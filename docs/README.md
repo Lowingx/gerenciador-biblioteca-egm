@@ -11,7 +11,7 @@ Todos os diagramas foram feitos em Mermaid e estão prontos para visualização 
 | Diagrama                          | Arquivo                              | Descrição                                                                 |
 |-----------------------------------|--------------------------------------|---------------------------------------------------------------------------|
 | Diagrama ER (Entidade-Relacionamento) | `der.png`                            | Estrutura do banco de dados (3 tabelas: alunos, livros, emprestimos)    |
-| C4 Container                      | `c4-container.md`                   | Visão geral do sistema completo (frontend, backend, banco e WhatsApp)   |
+| C4 Container                      | `dc4c.png`                   | Visão geral do sistema completo (frontend, backend, banco e WhatsApp)   |
 | C4 Component (Backend)            | `c4-component.md`                   | Estrutura interna do backend (routers, schemas, models, CRUD, auth)     |
 | Sequência - Cadastro de Livro     | `sequencia-cadastro-livro.md`       | Fluxo completo de cadastro de um novo livro                              |
 | Sequência - Empréstimo            | `sequencia-emprestimo.md`           | Fluxo de empréstimo com validações de disponibilidade e aluno ativo      |
