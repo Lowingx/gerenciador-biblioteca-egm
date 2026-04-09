@@ -21,7 +21,7 @@ Todos os diagramas estão organizados nesta pasta para facilitar a visualizaçã
 
 ## Como visualizar os diagramas
 
-- **Arquivos .png**: Abra diretamente (der.png e dc4c.png) — já são imagens prontas.
+- **Arquivos .png**: Abra diretamente (der.png e dc4c.png) —> já são imagens prontas.
 - **Arquivos .md**: Abra no GitHub ou VS Code (com extensão Mermaid) para visualizar os diagramas interativos.
 - Para exportar imagem dos diagramas Mermaid: clique com o botão direito → "Exportar como PNG".
 
