@@ -1,4 +1,4 @@
-<<<<<<< Updated upstream
+
 <div align="center">
 
 # 📚 GBE Frontend
@@ -13,7 +13,7 @@
 *Desenvolvido com foco na realidade escolar brasileira. Alta performance em hardware limitado.*
 
 </div>
-=======
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -24,7 +24,7 @@ Currently, two official plugins are available:
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
 ## React Compiler
->>>>>>> Stashed changes
+
 
 The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
