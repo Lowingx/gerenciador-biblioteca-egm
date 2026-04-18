@@ -11,7 +11,7 @@ def lista_livros():
     return livros_db
 
 @router.post("/", response_model=LivroResponse)
-def criar_livro(livro = LivroCreate):
+def criar_livro(livro: LivroCreate):  
     novo_livro = livro.model_dump()
     novo_livro["id"] = len(livros_db) + 1
     novo_livro["quantidade_disponivel"] = novo_livro["quantidade_total"]
