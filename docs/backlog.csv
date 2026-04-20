@@ -18,7 +18,7 @@ Sprint 3,PB-08a,Criar busca avançada por título,GET /livros/busca?titulo=...,S
 Sprint 3,PB-08b,Criar busca por autor e categoria,GET /livros/busca?autor=...&categoria=...,Should,4,"Fabrício,Miguel",To Do,feature/pb-08b-busca-avancada
 Sprint 3,PB-09a,Criar agenda de monitores,Model + endpoints para agenda,Must,6,Evy,To Do,feature/pb-09a-agenda-monitores
 Sprint 3,PB-09b,Implementar rodízio de monitores,Visualização da agenda semanal,Should,5,"Giovanna,Ícaro",To Do,feature/pb-09b-rodizio
-Sprint 3,PB-10a,Criar dashboard básico,Quantidade de livros, emprestados, atrasados,Should,5,Evy,To Do,feature/pb-10a-dashboard
+Sprint 3,PB-10a,Criar dashboard básico,"Quantidade de livros, emprestados, atrasados",Should,5,Evy,To Do,feature/pb-10a-dashboard
 Sprint 3,PB-10b,Criar histórico de empréstimos do usuário,GET /meus-emprestimos,Should,4,"Fabrício,Miguel",To Do,feature/pb-10b-historico
-Sprint 4,PB-11,Refatoração e testes finais,Refatorar, adicionar testes e preparar apresentação final,Must,8,Evy,To Do,feature/pb-11-refatoracao-final
+Sprint 4,PB-11,Refatoração e testes finais,"Refatorar, adicionar testes e preparar apresentação final",Must,8,Evy,To Do,feature/pb-11-refatoracao-final
 Sprint 4,PB-12,Documentação final e apresentação,Finalizar documentação ABNT e slides,Must,6,Eduardo,To Do,feature/pb-12-documentacao
