@@ -60,7 +60,6 @@ Este documento apresenta o **Product Backlog técnico do projeto GBE**, organiza
 - **Total de backlog items:** 23  
 - **Total estimado:** 111 story points  
 - **Sprints planejadas:** 4  
-- **Metodologia:** Scrum  
 - **Estratégia de versionamento:** branches por backlog item (`feature/PB-ID`)  
 
 ---
