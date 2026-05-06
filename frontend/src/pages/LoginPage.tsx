@@ -23,7 +23,7 @@ function FluidBackground() {
       { yCenter: 0.48, height: 0.40, amp: 0.22, freq: 1.05, speed: 0.38, phase: 4.00, alpha: 0.38 },
     ];
 
-    const STEPS = 200;
+    const STEPS = 200; /* FIXME */
 
     function wave(nx: number, amp: number, freq: number, tPhase: number, H: number) {
       return H * (
