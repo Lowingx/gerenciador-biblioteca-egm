@@ -1,0 +1,78 @@
+name: GBE - Resumo de Sprint Automático
+
+on:
+  schedule:
+    - cron: '0 12 * * 5'
+  workflow_dispatch:
+
+permissions:
+  issues: read
+  pull-requests: read
+
+jobs:
+  sprint-summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gerar resumo de sprint
+        uses: actions/github-script@v7
+        env:
+          DISCORD_METRICS: ${{ secrets.DISCORD_METRICS }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              per_page: 100
+            });
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              per_page: 50
+            });
+
+            const oneWeekAgo = new Date(Date.now() - 7 * 86400000);
+
+            const realIssues = issues.filter(i => !i.pull_request && i.closed_at && new Date(i.closed_at) > oneWeekAgo);
+            const issuesCompleted = realIssues.filter(i => i.state_reason === 'completed');
+            const issuesDiscarded = realIssues.filter(i => i.state_reason === 'not_planned');
+
+            const prsMerged = pulls.filter(p => p.merged_at && new Date(p.merged_at) > oneWeekAgo);
+
+            const totalReal = issuesCompleted.length + prsMerged.length;
+
+            const workers = [
+              ...issuesCompleted.flatMap(i => i.assignees ? i.assignees.map(a => a.login) : []),
+              ...prsMerged.map(p => p.user.login)
+            ];
+
+            let mvp = "Ninguém entregou nada esta semana 👻";
+            if (workers.length > 0) {
+              const counts = workers.reduce((acc, user) => { acc[user] = (acc[user] || 0) + 1; return acc; }, {});
+              const top = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+              mvp = `**@${top}** com ${counts[top]} entregas 👑`;
+            }
+
+            const embed = {
+              title: "📊 Resumo de Sprint - Semana Finalizada",
+              color: 46296,
+              description: `Semana de ${new Date().toLocaleDateString('pt-BR')}`,
+              fields: [
+                { name: "🏆 Destaque da Semana", value: mvp, inline: false },
+                { name: "✅ Entregas Reais", value: `${totalReal}`, inline: true },
+                { name: "📌 Issues Concluídas", value: `${issuesCompleted.length}`, inline: true },
+                { name: "🔀 PRs Merged", value: `${prsMerged.length}`, inline: true },
+                { name: "🗑️ Descartadas", value: `${issuesDiscarded.length}`, inline: true },
+                { name: "📬 Backlog Aberto", value: `${issues.filter(i => i.state === 'open' && !i.pull_request).length}`, inline: true }
+              ],
+              footer: { text: "GBE - Resumo Semanal" },
+              timestamp: new Date().toISOString()
+            };
+
+            await fetch(process.env.DISCORD_METRICS, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ embeds: [embed] })
+            });
