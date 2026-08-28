@@ -1,151 +1,147 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import { GradientText, GradientButton } from "../components/ui";
-import { MotionCard, Stagger, StaggerItem } from "../motion";
-import { inputCls } from "../styles";
+import type { Livro } from "../api";
+import { GradientText, LoadingSpinner } from "../components/ui";
+import { MotionCard, Stagger, StaggerItem, FadeIn } from "../motion";
 
-type Kind = "autores" | "editoras" | "categorias";
-
-interface Item { id: number; nome: string; [k: string]: unknown }
-
-const LABELS: Record<Kind, string> = {
-  autores: "Autores",
-  editoras: "Editoras",
-  categorias: "Categorias",
-};
+type Tab = "autores" | "editoras" | "categorias";
 
 export default function CatalogoPage() {
-  const [kind, setKind] = useState<Kind>("autores");
-  const [items, setItems] = useState<Item[]>([]);
-  const [novo, setNovo] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editNome, setEditNome] = useState("");
+  const [tab, setTab] = useState<Tab>("autores");
+  const [autores, setAutores] = useState<{ id: number; nome: string }[]>([]);
+  const [editoras, setEditoras] = useState<{ id: number; nome: string }[]>([]);
+  const [categorias, setCategorias] = useState<{ id: number; nome: string }[]>([]);
+  const [livros, setLivros] = useState<Livro[]>([]);
   const [loading, setLoading] = useState(true);
-  const [reload, setReload] = useState(0);
+  const [form, setForm] = useState({ nome: "" });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    let active = true;
-    api
-      .get<Item[]>(`/${kind}/`)
-      .then((r) => {
-        if (active) setItems(r);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [kind, reload]);
+    Promise.all([
+      api.get<{ id: number; nome: string }[]>("/autores/").catch(() => []),
+      api.get<{ id: number; nome: string }[]>("/editoras/").catch(() => []),
+      api.get<{ id: number; nome: string }[]>("/categorias/").catch(() => []),
+      api.get<Livro[]>("/livros/").catch(() => []),
+    ]).then(([a, e, c, l]) => { setAutores(a); setEditoras(e); setCategorias(c); setLivros(l); })
+      .finally(() => setLoading(false));
+  }, []);
 
-  const criar = async (e: React.FormEvent) => {
+  const getTabData = () => {
+    if (tab === "autores") return { items: autores, reload: () => api.get<{ id: number; nome: string }[]>("/autores/").then(setAutores), endpoint: "/autores/" };
+    if (tab === "editoras") return { items: editoras, reload: () => api.get<{ id: number; nome: string }[]>("/editoras/").then(setEditoras), endpoint: "/editoras/" };
+    return { items: categorias, reload: () => api.get<{ id: number; nome: string }[]>("/categorias/").then(setCategorias), endpoint: "/categorias/" };
+  };
+
+  const { items, reload, endpoint } = getTabData();
+
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!novo.trim()) return;
-    await api.post(`/${kind}/`, { nome: novo.trim() });
-    setNovo("");
-    setReload((r) => r + 1);
+    setSaving(true);
+    try {
+      await api.post(endpoint, { nome: form.nome });
+      setForm({ nome: "" });
+      reload();
+    } catch { /* ignore */ } finally { setSaving(false); }
   };
 
-  const atualizar = async () => {
-    if (editingId === null || !editNome.trim()) return;
-    await api.put(`/${kind}/${editingId}`, { nome: editNome.trim() });
-    setEditingId(null);
-    setEditNome("");
-    setReload((r) => r + 1);
+  const handleDelete = async (id: number) => {
+    if (!confirm("Remover este item?")) return;
+    const ep = tab === "autores" ? "/autores" : tab === "editoras" ? "/editoras" : "/categorias";
+    await api.del(`${ep}/${id}`);
+    reload();
   };
 
-  const remover = async (id: number) => {
-    if (!confirm("Excluir este item?")) return;
-    await api.del(`/${kind}/${id}`);
-    setReload((r) => r + 1);
-  };
+  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
+    { key: "autores", label: "Autores", icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> },
+    { key: "editoras", label: "Editoras", icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg> },
+    { key: "categorias", label: "Categorias", icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg> },
+  ];
 
   return (
-    <div>
-      <h1 className="font-poppins font-extrabold text-3xl text-gray-800 mb-1">
-        <GradientText>Catálogo</GradientText>
-      </h1>
-      <p className="font-inter text-gray-500 mb-8">Gerencie autores, editoras e categorias.</p>
+    <div className="space-y-6">
+      <FadeIn>
+        <h1 className="font-heading font-bold text-3xl text-[var(--color-fg)]"><GradientText>Catálogo</GradientText></h1>
+        <p className="font-body text-[var(--color-muted-fg)] mt-1">Gerencie autores, editoras e categorias.</p>
+      </FadeIn>
 
-      <div className="flex gap-2 mb-5 flex-wrap">
-        {(Object.keys(LABELS) as Kind[]).map((k) => (
-          <button
-            key={k}
-            onClick={() => setKind(k)}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-              kind === k
-                ? "bg-gradient-to-r from-[#6B46C0] to-[#00B4D8] text-white"
-                : "bg-white/70 text-gray-600 hover:bg-white"
-            }`}
-          >
-            {LABELS[k]}
+      {/* Tabs */}
+      <FadeIn delay={0.05}>
+        <div className="flex gap-2">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`clay-btn text-sm flex items-center gap-2 ${tab === t.key ? "clay-btn-primary" : "clay-btn-ghost"}`}
+            >
+              {t.icon}
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </FadeIn>
+
+      {/* Create form */}
+      <FadeIn delay={0.1}>
+        <form onSubmit={handleCreate} className="flex gap-3">
+          <input
+            className="clay-input flex-1"
+            placeholder={`Nome do ${tab === "autores" ? "autor" : tab === "editoras" ? "editora" : "categoria"}`}
+            value={form.nome}
+            onChange={(e) => setForm({ nome: e.target.value })}
+            required
+          />
+          <button type="submit" disabled={saving} className="clay-btn clay-btn-accent disabled:opacity-60">
+            {saving ? "Salvando…" : "+ Adicionar"}
           </button>
-        ))}
-      </div>
+        </form>
+      </FadeIn>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <MotionCard className="p-6">
-          <h2 className="font-poppins font-bold text-lg text-gray-800 mb-4">Novo {LABELS[kind].toLowerCase().slice(0, -1)}</h2>
-          <form onSubmit={criar} className="flex gap-2">
-            <input
-              value={novo}
-              onChange={(e) => setNovo(e.target.value)}
-              placeholder="Nome"
-              className={inputCls}
-            />
-            <GradientButton className="px-5 py-2.5" type="submit">
-              +
-            </GradientButton>
-          </form>
-        </MotionCard>
+      {/* List */}
+      {loading ? <LoadingSpinner /> : (
+        <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {items.map((item: { id: number; nome: string }) => (
+            <StaggerItem key={item.id}>
+              <MotionCard className="p-4 flex items-center justify-between" hover>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-[var(--radius-sm)] bg-[var(--color-primary)] flex items-center justify-center border-2 border-[#4338CA] shadow-md">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                  <span className="font-body font-bold text-[var(--color-fg)] text-sm">{item.nome}</span>
+                </div>
+                <button onClick={() => handleDelete(item.id)} className="text-[var(--color-muted-fg)] hover:text-[var(--color-destructive)] transition-colors p-1">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </MotionCard>
+            </StaggerItem>
+          ))}
+        </Stagger>
+      )}
 
-        <MotionCard className="p-6 lg:col-span-2" delay={0.08}>
-          <h2 className="font-poppins font-bold text-lg text-gray-800 mb-4">
-            {LABELS[kind]} ({items.length})
-          </h2>
-          {loading ? (
-            <p className="font-inter text-gray-400">Carregando…</p>
-          ) : items.length === 0 ? (
-            <p className="font-inter text-gray-400">Nenhum item cadastrado.</p>
-          ) : (
-            <Stagger className="divide-y divide-gray-100">
-              {items.map((item) => (
-                <StaggerItem key={item.id} y={12}>
-                  <li className="flex items-center justify-between py-2.5">
-                    {editingId === item.id ? (
-                      <div className="flex gap-2 flex-1">
-                        <input value={editNome} onChange={(e) => setEditNome(e.target.value)} className={inputCls} />
-                        <GradientButton className="px-4 py-2" onClick={atualizar}>
-                          Salvar
-                        </GradientButton>
-                      </div>
-                    ) : (
-                      <>
-                        <span className="font-inter text-gray-800 text-sm">{item.nome}</span>
-                        <div>
-                          <button
-                            onClick={() => {
-                              setEditingId(item.id);
-                              setEditNome(item.nome);
-                            }}
-                            className="text-[#00B4D8] hover:underline text-sm mr-3"
-                          >
-                            Editar
-                          </button>
-                          <button onClick={() => remover(item.id)} className="text-red-500 hover:underline text-sm">
-                            Excluir
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </li>
-                </StaggerItem>
-              ))}
-            </Stagger>
-          )}
-        </MotionCard>
-      </div>
+      {/* Livros with catalog info */}
+      <FadeIn delay={0.15}>
+        <h2 className="font-heading font-semibold text-lg text-[var(--color-fg)] mt-8 mb-4">Livros no acervo</h2>
+      </FadeIn>
+      {loading ? <LoadingSpinner /> : (
+        <Stagger className="space-y-3">
+          {livros.map((l) => (
+            <StaggerItem key={l.id}>
+              <MotionCard className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2" hover>
+                <div>
+                  <div className="font-body font-bold text-[var(--color-fg)]">{l.titulo}</div>
+                  <div className="font-body text-xs text-[var(--color-muted-fg)]">
+                    {l.autores?.map((a) => a.nome).join(", ") || "Sem autor"} · {l.editora?.nome || "Sem editora"}
+                  </div>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {l.categoria && (
+                    <span className="clay-badge clay-badge-primary">{l.categoria.nome}</span>
+                  )}
+                </div>
+              </MotionCard>
+            </StaggerItem>
+          ))}
+        </Stagger>
+      )}
     </div>
   );
 }

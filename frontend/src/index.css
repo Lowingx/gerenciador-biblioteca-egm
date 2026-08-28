@@ -6,19 +6,14 @@
 
 body {
   margin: 0;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: "Nunito", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--color-bg);
+  color: var(--color-fg);
 }
 
 input:focus { outline: none; }
-
 html { scroll-behavior: smooth; }
-
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: rgba(107, 70, 192, 0.2);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover { background: rgba(107, 70, 192, 0.4); }
+button { cursor: pointer; }
+a { text-decoration: none; }

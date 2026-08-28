@@ -1,199 +1,94 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import type { Emprestimo, Livro } from "../api";
-import { GradientText, GradientButton, Field, StatusBadge, MotionModal } from "../components/ui";
-import { MotionCard } from "../motion";
-import { inputCls } from "../styles";
+import type { Emprestimo } from "../api";
+import { GradientText, StatusBadge, LoadingSpinner, MotionModal } from "../components/ui";
+import { MotionCard, Stagger, StaggerItem, FadeIn } from "../motion";
 
 export default function EmprestimosPage() {
   const [emprestimos, setEmprestimos] = useState<Emprestimo[]>([]);
-  const [livros, setLivros] = useState<Livro[]>([]);
   const [loading, setLoading] = useState(true);
-  const [reload, setReload] = useState(0);
-  const [filter, setFilter] = useState("todos");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [livroId, setLivroId] = useState("");
-  const [matricula, setMatricula] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({ matricula: "", livro_id: 0 });
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
 
-  useEffect(() => {
-    let active = true;
-    Promise.all([api.get<Emprestimo[]>("/emprestimos/"), api.get<Livro[]>("/livros/")])
-      .then(([e, l]) => {
-        if (!active) return;
-        setEmprestimos(e);
-        setLivros(l);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [reload]);
+  const load = () => {
+    api.get<Emprestimo[]>("/emprestimos/").then(setEmprestimos).catch(() => {}).finally(() => setLoading(false));
+  };
+  useEffect(load, []);
 
-  const filtered =
-    filter === "todos"
-      ? emprestimos
-      : emprestimos.filter((e) => {
-          if (filter === "ativos") return e.status === "ativo";
-          if (filter === "atrasados") return e.status === "ativo" && (e.multa || 0) > 0;
-          return e.status === "devolvido";
-        });
-
-  const criar = async (e: React.FormEvent) => {
+  const handleEmprestar = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    setError("");
     try {
-      await api.post("/emprestimos/", { livro_id: Number(livroId), matricula });
-      setModalOpen(false);
-      setLivroId("");
-      setMatricula("");
-      setReload((r) => r + 1);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao emprestar");
-    } finally {
-      setSaving(false);
-    }
+      await api.post("/emprestimos/", { matricula: form.matricula, livro_id: form.livro_id });
+      setShowModal(false);
+      setForm({ matricula: "", livro_id: 0 });
+      load();
+    } catch { /* ignore */ } finally { setSaving(false); }
   };
 
-  const devolver = async (id: number) => {
-    try {
-      await api.post(`/emprestimos/${id}/devolver`);
-      setReload((r) => r + 1);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao devolver");
-    }
-  };
-
-  const fmt = (s?: string | null) => {
-    if (!s) return "—";
-    const d = new Date(s);
-    return d.toLocaleDateString("pt-BR");
+  const handleDevolver = async (id: number) => {
+    await api.put(`/emprestimos/${id}/devolver`);
+    load();
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-        <div>
-          <h1 className="font-poppins font-extrabold text-3xl text-gray-800">
-            <GradientText>Empréstimos</GradientText>
-          </h1>
-          <p className="font-inter text-gray-500">Controle de empréstimos, devoluções e multas.</p>
-        </div>
-        <GradientButton onClick={() => setModalOpen(true)} className="px-6 py-3">
-          + Novo empréstimo
-        </GradientButton>
-      </div>
-
-      <div className="flex gap-2 mb-5 flex-wrap">
-        {[
-          { k: "todos", label: "Todos" },
-          { k: "ativos", label: "Ativos" },
-          { k: "atrasados", label: "Atrasados" },
-          { k: "devolvidos", label: "Devolvidos" },
-        ].map((f) => (
-          <button
-            key={f.k}
-            onClick={() => setFilter(f.k)}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-              filter === f.k
-                ? "bg-gradient-to-r from-[#6B46C0] to-[#00B4D8] text-white"
-                : "bg-white/70 text-gray-600 hover:bg-white"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      <MotionCard className="p-6">
-        {loading ? (
-          <p className="font-inter text-gray-400">Carregando…</p>
-        ) : filtered.length === 0 ? (
-          <p className="font-inter text-gray-400">Nenhum empréstimo.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="gbe-table w-full text-left">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="font-poppins font-semibold text-gray-700 text-sm pb-3 pr-4">Livro</th>
-                  <th className="font-poppins font-semibold text-gray-700 text-sm pb-3 pr-4">RA</th>
-                  <th className="font-poppins font-semibold text-gray-700 text-sm pb-3 pr-4">Emprestado</th>
-                  <th className="font-poppins font-semibold text-gray-700 text-sm pb-3 pr-4">Devolver até</th>
-                  <th className="font-poppins font-semibold text-gray-700 text-sm pb-3 pr-4">Multa</th>
-                  <th className="font-poppins font-semibold text-gray-700 text-sm pb-3 pr-4">Status</th>
-                  <th className="font-poppins font-semibold text-gray-700 text-sm pb-3">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((e) => (
-                  <tr key={e.id} className="border-b border-gray-100">
-                    <td className="font-inter text-gray-800 text-sm py-3 pr-4">{e.titulo_livro || "—"}</td>
-                    <td className="font-inter text-gray-600 text-sm py-3 pr-4">{e.matricula}</td>
-                    <td className="font-inter text-gray-600 text-sm py-3 pr-4">{fmt(e.data_emprestimo)}</td>
-                    <td className="font-inter text-gray-600 text-sm py-3 pr-4">{fmt(e.data_devolucao_prevista)}</td>
-                    <td className="font-inter text-sm py-3 pr-4">
-                      {e.multa && e.multa > 0 ? (
-                        <span className="text-red-600 font-semibold">R$ {e.multa.toFixed(2)}</span>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
-                    </td>
-                    <td className="py-3 pr-4"><StatusBadge status={e.status} /></td>
-                    <td className="font-inter text-sm py-3">
-                      {e.status !== "devolvido" && (
-                        <button onClick={() => devolver(e.id)} className="text-[#00B4D8] hover:underline">
-                          Devolver
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <div className="space-y-6">
+      <FadeIn>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-heading font-bold text-3xl text-[var(--color-fg)]"><GradientText>Empréstimos</GradientText></h1>
+            <p className="font-body text-[var(--color-muted-fg)] mt-1">Registre e acompanhe empréstimos.</p>
           </div>
-        )}
-      </MotionCard>
+          <button onClick={() => setShowModal(true)} className="clay-btn clay-btn-accent">+ Novo Empréstimo</button>
+        </div>
+      </FadeIn>
 
-      <MotionModal open={modalOpen} onClose={() => setModalOpen(false)} title="Novo empréstimo">
-        <form onSubmit={criar} className="space-y-4 mt-4">
-          {error && (
-            <div className="font-inter text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2">{error}</div>
-          )}
-          <Field label="Livro">
-            <select
-              required
-              value={livroId}
-              onChange={(e) => setLivroId(e.target.value)}
-              className={inputCls}
-            >
-              <option value="">Selecione…</option>
-              {livros
-                .filter((l) => l.quantidade_disponivel > 0)
-                .map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.titulo} ({l.quantidade_disponivel} disp.)
-                  </option>
-                ))}
-            </select>
-          </Field>
-          <Field label="RA do aluno">
-            <input required value={matricula} onChange={(e) => setMatricula(e.target.value)} placeholder="Ex: 2024-001" className={inputCls} />
-          </Field>
+      {loading ? <LoadingSpinner /> : (
+        <Stagger className="space-y-3">
+          {emprestimos.length === 0 ? (
+            <FadeIn><p className="font-body text-[var(--color-muted-fg)] text-sm">Nenhum empréstimo registrado.</p></FadeIn>
+          ) : emprestimos.map((e) => (
+            <StaggerItem key={e.id}>
+              <MotionCard className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3" hover>
+                <div className="flex items-center gap-4">
+                  <div className={`w-10 h-10 rounded-[var(--radius-sm)] flex items-center justify-center border-2 shadow-md ${e.status === "ativo" ? "bg-[var(--color-success)] border-[#15803D]" : e.status === "atrasado" ? "bg-[var(--color-destructive)] border-[#991B1B]" : "bg-[var(--color-primary)] border-[#4338CA]"}`}>
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                  </div>
+                  <div>
+                    <div className="font-body font-bold text-[var(--color-fg)] text-sm">{e.titulo_livro || "Livro"}</div>
+                    <div className="font-body text-xs text-[var(--color-muted-fg)]">RA {e.matricula} · {new Date(e.data_emprestimo).toLocaleDateString("pt-BR")}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <StatusBadge status={e.status} />
+                  {e.status === "ativo" && (
+                    <button onClick={() => handleDevolver(e.id)} className="clay-btn clay-btn-primary text-xs py-1.5 px-3">Devolver</button>
+                  )}
+                  {e.multa && e.multa > 0 && (
+                    <span className="clay-badge clay-badge-danger">R$ {e.multa.toFixed(2)}</span>
+                  )}
+                </div>
+              </MotionCard>
+            </StaggerItem>
+          ))}
+        </Stagger>
+      )}
+
+      <MotionModal open={showModal} onClose={() => setShowModal(false)} title="Novo Empréstimo">
+        <form onSubmit={handleEmprestar} className="space-y-4 mt-4">
+          <label className="block">
+            <span className="font-body text-xs font-bold text-[var(--color-muted-fg)] uppercase tracking-wider mb-1.5 block">RA do Aluno</span>
+            <input className="clay-input" value={form.matricula} onChange={(e) => setForm({ ...form, matricula: e.target.value })} required />
+          </label>
+          <label className="block">
+            <span className="font-body text-xs font-bold text-[var(--color-muted-fg)] uppercase tracking-wider mb-1.5 block">ID do Livro</span>
+            <input type="number" min={1} className="clay-input" value={form.livro_id || ""} onChange={(e) => setForm({ ...form, livro_id: +e.target.value })} required />
+          </label>
           <div className="flex gap-3 pt-2">
-            <GradientButton loading={saving} className="flex-1 py-3" type="submit">
-              Emprestar
-            </GradientButton>
-            <button
-              type="button"
-              onClick={() => setModalOpen(false)}
-              className="font-inter font-medium flex-1 py-3 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              Cancelar
+            <button type="button" onClick={() => setShowModal(false)} className="clay-btn clay-btn-ghost flex-1">Cancelar</button>
+            <button type="submit" disabled={saving} className="clay-btn clay-btn-primary flex-1 disabled:opacity-60">
+              {saving ? "Salvando…" : "Emprestar"}
             </button>
           </div>
         </form>
