@@ -1,7 +1,4 @@
-# ────────────────────────────────────────────────────────────
-# - Responsável por inicializar a API, definir rotas
-# ────────────────────────────────────────────────────────────
-
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -12,10 +9,12 @@ from app.routers.catalog import router_autores, router_categorias, router_editor
 from app.routers.emprestimos import router as emprestimos_router
 from app.routers.auth import router as auth_router
 
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Cria as tabelas ao subir (dev). Em produção usar alembic."""
     init_db()
     yield
 
@@ -24,18 +23,18 @@ app = FastAPI(
     title="GBE - Gerenciador de Biblioteca Escolar",
     description="API REST para gestão de acervo, usuários, empréstimos e devoluções",
     version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url="/docs" if ENVIRONMENT != "production" else None,
+    redoc_url="/redoc" if ENVIRONMENT != "production" else None,
+    openapi_url="/openapi.json" if ENVIRONMENT != "production" else None,
     lifespan=lifespan,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 

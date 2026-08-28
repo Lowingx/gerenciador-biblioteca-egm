@@ -3,14 +3,18 @@ import { api } from "../api";
 import type { Livro } from "../api";
 import { GradientText, StatusBadge, LoadingSpinner, MotionModal } from "../components/ui";
 import { MotionCard, Stagger, StaggerItem, FadeIn } from "../motion";
+import { useAuth } from "../AuthContext";
 
 export default function LivrosPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.is_admin;
   const [livros, setLivros] = useState<Livro[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editLivro, setEditLivro] = useState<Livro | null>(null);
   const [form, setForm] = useState({ titulo: "", autor: "", editora: "", quantidade: 1 });
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const load = () => {
     api.get<Livro[]>("/livros/").then(setLivros).catch(() => {}).finally(() => setLoading(false));
@@ -23,21 +27,28 @@ export default function LivrosPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setError("");
     try {
       if (editLivro) {
         await api.put(`/livros/${editLivro.id}`, { titulo: form.titulo, quantidade_total: form.quantidade });
       } else {
-        await api.post("/livros/", { titulo: form.titulo, quantidade_total: form.quantidade, quantidade_disponivel: form.quantidade });
+        await api.post("/livros/", { titulo: form.titulo, quantidade_total: form.quantidade });
       }
       setShowModal(false);
       load();
-    } catch { /* ignore */ } finally { setSaving(false); }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao salvar livro");
+    } finally { setSaving(false); }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("Remover este livro?")) return;
-    await api.del(`/livros/${id}`);
-    load();
+    try {
+      await api.del(`/livros/${id}`);
+      load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao remover livro");
+    }
   };
 
   return (
@@ -53,7 +64,11 @@ export default function LivrosPage() {
       </FadeIn>
 
       {loading ? <LoadingSpinner /> : (
-        <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <>
+          {error && (
+            <div className="clay-badge clay-badge-danger w-full justify-center py-3 text-sm">{error}</div>
+          )}
+          <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {livros.map((l) => (
             <StaggerItem key={l.id}>
               <MotionCard className="p-5" hover>
@@ -72,12 +87,15 @@ export default function LivrosPage() {
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => openEdit(l)} className="clay-btn clay-btn-ghost text-xs flex-1">Editar</button>
-                  <button onClick={() => handleDelete(l.id)} className="clay-btn clay-btn-ghost text-xs text-[var(--color-destructive)] border-[var(--color-destructive)]/30 hover:bg-red-50">Remover</button>
+                  {isAdmin && (
+                    <button onClick={() => handleDelete(l.id)} className="clay-btn clay-btn-ghost text-xs text-[var(--color-destructive)] border-[var(--color-destructive)]/30 hover:bg-red-50">Remover</button>
+                  )}
                 </div>
               </MotionCard>
             </StaggerItem>
           ))}
         </Stagger>
+        </>
       )}
 
       <MotionModal open={showModal} onClose={() => setShowModal(false)} title={editLivro ? "Editar Livro" : "Novo Livro"}>

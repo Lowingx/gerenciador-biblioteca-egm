@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 def _agora():
     """Datetime naive em UTC (sqlite não preserva timezone)."""
-    return datetime.utcnow()
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class Emprestimo(Base):

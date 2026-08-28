@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
-from typing import List
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_admin
 from app.models.livro import Livro
 from app.models.autor import Autor
 from app.models.categoria import Categoria
@@ -24,7 +23,7 @@ def _get_or_create(db: Session, model, nome: str):
     return inst
 
 
-@router.get("/", response_model=List[LivroResponse])
+@router.get("/", response_model=list[LivroResponse])
 def lista_livros(
     q: str = Query(None, description="Busca por título"),
     db: Session = Depends(get_db),
@@ -62,7 +61,7 @@ def get_livro(
 def criar_livro(
     livro: LivroCreate,
     db: Session = Depends(get_db),
-    _: str = Depends(get_current_user),
+    _: str = Depends(require_admin),
 ):
     categoria = None
     if livro.categoria_id:
@@ -98,7 +97,7 @@ def atualizar_livro(
     livro_id: int,
     dados: LivroUpdate,
     db: Session = Depends(get_db),
-    _: str = Depends(get_current_user),
+    _: str = Depends(require_admin),
 ):
     livro = db.query(Livro).filter(Livro.id == livro_id).first()
     if livro is None:
@@ -111,6 +110,12 @@ def atualizar_livro(
     if dados.ano_publicacao is not None:
         livro.ano_publicacao = dados.ano_publicacao
     if dados.quantidade_total is not None:
+        emprestados = livro.quantidade_total - livro.quantidade_disponivel
+        if dados.quantidade_total < emprestados:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Quantidade total não pode ser menor que {emprestados} (empréstimos ativos)",
+            )
         livro.quantidade_total = dados.quantidade_total
     if dados.categoria_id is not None:
         livro.categoria_id = dados.categoria_id
@@ -128,7 +133,7 @@ def atualizar_livro(
 def deletar_livro(
     livro_id: int,
     db: Session = Depends(get_db),
-    _: str = Depends(get_current_user),
+    _: str = Depends(require_admin),
 ):
     livro = db.query(Livro).filter(Livro.id == livro_id).first()
     if livro is None:

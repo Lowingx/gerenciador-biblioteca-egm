@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 
 
@@ -38,20 +38,22 @@ class EditoraResponse(BaseModel):
 
 
 class LivroCreate(BaseModel):
-    titulo: str
+    titulo: str = Field(min_length=1)
     isbn: Optional[str] = None
     ano_publicacao: Optional[int] = None
-    quantidade_total: int = 1
+    quantidade_total: int = Field(default=1, ge=1)
     categoria_id: Optional[int] = None
     editora_id: Optional[int] = None
     autores_id: Optional[list[int]] = None
 
+    model_config = {"json_schema_extra": {"examples": [{"quantidade_total": 1}]}}
+
 
 class LivroUpdate(BaseModel):
-    titulo: Optional[str] = None
+    titulo: Optional[str] = Field(default=None, min_length=1)
     isbn: Optional[str] = None
     ano_publicacao: Optional[int] = None
-    quantidade_total: Optional[int] = None
+    quantidade_total: Optional[int] = Field(default=None, ge=1)
     categoria_id: Optional[int] = None
     editora_id: Optional[int] = None
     autores_id: Optional[list[int]] = None

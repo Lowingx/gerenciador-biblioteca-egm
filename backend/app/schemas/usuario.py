@@ -1,13 +1,12 @@
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from typing import Optional
 
 
 class UsuarioCreate(BaseModel):
-    ra: str
-    nome: str
+    ra: str = Field(min_length=1)
+    nome: str = Field(min_length=1)
     email: EmailStr
-    senha: str
-    is_admin: Optional[bool] = False
+    senha: str = Field(min_length=6)
 
 
 class UsuarioLogin(BaseModel):

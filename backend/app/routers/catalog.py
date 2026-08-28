@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_admin
 from app.models.autor import Autor
 from app.models.categoria import Categoria
 from app.models.editora import Editora
@@ -20,13 +19,13 @@ router_editoras = APIRouter(prefix="/editoras", tags=["editoras"])
 
 # ── AUTORES ────────────────────────────────────────────────
 
-@router_autores.get("/", response_model=List[AutorResponse])
+@router_autores.get("/", response_model=list[AutorResponse])
 def lista_autores(db: Session = Depends(get_db), _: str = Depends(get_current_user)):
     return db.query(Autor).order_by(Autor.nome).all()
 
 
 @router_autores.post("/", response_model=AutorResponse, status_code=201)
-def criar_autor(autor: AutorCreate, db: Session = Depends(get_db), _: str = Depends(get_current_user)):
+def criar_autor(autor: AutorCreate, db: Session = Depends(get_db), _: str = Depends(require_admin)):
     nova = Autor(nome=autor.nome.strip(), biografia=autor.biografia)
     db.add(nova)
     db.commit()
@@ -35,7 +34,7 @@ def criar_autor(autor: AutorCreate, db: Session = Depends(get_db), _: str = Depe
 
 
 @router_autores.put("/{autor_id}", response_model=AutorResponse)
-def atualizar_autor(autor_id: int, dados: AutorCreate, db: Session = Depends(get_db), _: str = Depends(get_current_user)):
+def atualizar_autor(autor_id: int, dados: AutorCreate, db: Session = Depends(get_db), _: str = Depends(require_admin)):
     autor = db.query(Autor).filter(Autor.id == autor_id).first()
     if autor is None:
         raise HTTPException(status_code=404, detail="Autor não encontrado")
@@ -47,7 +46,7 @@ def atualizar_autor(autor_id: int, dados: AutorCreate, db: Session = Depends(get
 
 
 @router_autores.delete("/{autor_id}", status_code=204)
-def deletar_autor(autor_id: int, db: Session = Depends(get_db), _: str = Depends(get_current_user)):
+def deletar_autor(autor_id: int, db: Session = Depends(get_db), _: str = Depends(require_admin)):
     autor = db.query(Autor).filter(Autor.id == autor_id).first()
     if autor is None:
         raise HTTPException(status_code=404, detail="Autor não encontrado")
@@ -58,13 +57,13 @@ def deletar_autor(autor_id: int, db: Session = Depends(get_db), _: str = Depends
 
 # ── CATEGORIAS ────────────────────────────────────────────
 
-@router_categorias.get("/", response_model=List[CategoriaResponse])
+@router_categorias.get("/", response_model=list[CategoriaResponse])
 def lista_categorias(db: Session = Depends(get_db), _: str = Depends(get_current_user)):
     return db.query(Categoria).order_by(Categoria.nome).all()
 
 
 @router_categorias.post("/", response_model=CategoriaResponse, status_code=201)
-def criar_categoria(cat: CategoriaCreate, db: Session = Depends(get_db), _: str = Depends(get_current_user)):
+def criar_categoria(cat: CategoriaCreate, db: Session = Depends(get_db), _: str = Depends(require_admin)):
     nova = Categoria(nome=cat.nome.strip())
     db.add(nova)
     db.commit()
@@ -73,7 +72,7 @@ def criar_categoria(cat: CategoriaCreate, db: Session = Depends(get_db), _: str 
 
 
 @router_categorias.put("/{cat_id}", response_model=CategoriaResponse)
-def atualizar_categoria(cat_id: int, dados: CategoriaCreate, db: Session = Depends(get_db), _: str = Depends(get_current_user)):
+def atualizar_categoria(cat_id: int, dados: CategoriaCreate, db: Session = Depends(get_db), _: str = Depends(require_admin)):
     cat = db.query(Categoria).filter(Categoria.id == cat_id).first()
     if cat is None:
         raise HTTPException(status_code=404, detail="Categoria não encontrada")
@@ -84,7 +83,7 @@ def atualizar_categoria(cat_id: int, dados: CategoriaCreate, db: Session = Depen
 
 
 @router_categorias.delete("/{cat_id}", status_code=204)
-def deletar_categoria(cat_id: int, db: Session = Depends(get_db), _: str = Depends(get_current_user)):
+def deletar_categoria(cat_id: int, db: Session = Depends(get_db), _: str = Depends(require_admin)):
     cat = db.query(Categoria).filter(Categoria.id == cat_id).first()
     if cat is None:
         raise HTTPException(status_code=404, detail="Categoria não encontrada")
@@ -95,13 +94,13 @@ def deletar_categoria(cat_id: int, db: Session = Depends(get_db), _: str = Depen
 
 # ── EDITORAS ──────────────────────────────────────────────
 
-@router_editoras.get("/", response_model=List[EditoraResponse])
+@router_editoras.get("/", response_model=list[EditoraResponse])
 def lista_editoras(db: Session = Depends(get_db), _: str = Depends(get_current_user)):
     return db.query(Editora).order_by(Editora.nome).all()
 
 
 @router_editoras.post("/", response_model=EditoraResponse, status_code=201)
-def criar_editora(ed: EditoraCreate, db: Session = Depends(get_db), _: str = Depends(get_current_user)):
+def criar_editora(ed: EditoraCreate, db: Session = Depends(get_db), _: str = Depends(require_admin)):
     nova = Editora(nome=ed.nome.strip())
     db.add(nova)
     db.commit()
@@ -110,7 +109,7 @@ def criar_editora(ed: EditoraCreate, db: Session = Depends(get_db), _: str = Dep
 
 
 @router_editoras.put("/{ed_id}", response_model=EditoraResponse)
-def atualizar_editora(ed_id: int, dados: EditoraCreate, db: Session = Depends(get_db), _: str = Depends(get_current_user)):
+def atualizar_editora(ed_id: int, dados: EditoraCreate, db: Session = Depends(get_db), _: str = Depends(require_admin)):
     ed = db.query(Editora).filter(Editora.id == ed_id).first()
     if ed is None:
         raise HTTPException(status_code=404, detail="Editora não encontrada")
@@ -121,7 +120,7 @@ def atualizar_editora(ed_id: int, dados: EditoraCreate, db: Session = Depends(ge
 
 
 @router_editoras.delete("/{ed_id}", status_code=204)
-def deletar_editora(ed_id: int, db: Session = Depends(get_db), _: str = Depends(get_current_user)):
+def deletar_editora(ed_id: int, db: Session = Depends(get_db), _: str = Depends(require_admin)):
     ed = db.query(Editora).filter(Editora.id == ed_id).first()
     if ed is None:
         raise HTTPException(status_code=404, detail="Editora não encontrada")

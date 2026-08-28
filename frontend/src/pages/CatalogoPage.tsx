@@ -3,10 +3,13 @@ import { api } from "../api";
 import type { Livro } from "../api";
 import { GradientText, LoadingSpinner } from "../components/ui";
 import { MotionCard, Stagger, StaggerItem, FadeIn } from "../motion";
+import { useAuth } from "../AuthContext";
 
 type Tab = "autores" | "editoras" | "categorias";
 
 export default function CatalogoPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.is_admin;
   const [tab, setTab] = useState<Tab>("autores");
   const [autores, setAutores] = useState<{ id: number; nome: string }[]>([]);
   const [editoras, setEditoras] = useState<{ id: number; nome: string }[]>([]);
@@ -15,6 +18,7 @@ export default function CatalogoPage() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ nome: "" });
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     Promise.all([
@@ -37,18 +41,25 @@ export default function CatalogoPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setError("");
     try {
       await api.post(endpoint, { nome: form.nome });
       setForm({ nome: "" });
       reload();
-    } catch { /* ignore */ } finally { setSaving(false); }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao criar item");
+    } finally { setSaving(false); }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("Remover este item?")) return;
-    const ep = tab === "autores" ? "/autores" : tab === "editoras" ? "/editoras" : "/categorias";
-    await api.del(`${ep}/${id}`);
-    reload();
+    try {
+      const ep = tab === "autores" ? "/autores" : tab === "editoras" ? "/editoras" : "/categorias";
+      await api.del(`${ep}/${id}`);
+      reload();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao remover item");
+    }
   };
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
@@ -98,7 +109,11 @@ export default function CatalogoPage() {
 
       {/* List */}
       {loading ? <LoadingSpinner /> : (
-        <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <>
+          {error && (
+            <div className="clay-badge clay-badge-danger w-full justify-center py-3 text-sm">{error}</div>
+          )}
+          <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item: { id: number; nome: string }) => (
             <StaggerItem key={item.id}>
               <MotionCard className="p-4 flex items-center justify-between" hover>
@@ -108,13 +123,16 @@ export default function CatalogoPage() {
                   </div>
                   <span className="font-body font-bold text-[var(--color-fg)] text-sm">{item.nome}</span>
                 </div>
-                <button onClick={() => handleDelete(item.id)} className="text-[var(--color-muted-fg)] hover:text-[var(--color-destructive)] transition-colors p-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
+                {isAdmin && (
+                  <button onClick={() => handleDelete(item.id)} className="text-[var(--color-muted-fg)] hover:text-[var(--color-destructive)] transition-colors p-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                )}
               </MotionCard>
             </StaggerItem>
           ))}
         </Stagger>
+        </>
       )}
 
       {/* Livros with catalog info */}

@@ -21,8 +21,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.usuario;
   }, []);
 
-  const logout = useCallback(() => {
-    api.post("/logout").catch(() => {});
+  const logout = useCallback(async () => {
+    try {
+      await api.post("/logout");
+    } catch { /* best effort */ }
     setToken(null);
     setUser(null);
   }, []);

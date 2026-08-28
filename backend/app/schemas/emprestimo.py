@@ -5,7 +5,6 @@ from typing import Optional
 
 class EmprestimoCreate(BaseModel):
     livro_id: int
-    matricula: str
     usuario_id: Optional[int] = None
 
 
