@@ -7,7 +7,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from backend.app.models.token_blacklist import TokenBlacklist
+from app.models.token_blacklist import TokenBlacklist
 
 limiter = Limiter(key_func=get_remote_address)
 SECRET_KEY = os.getenv("SECRET_KEY", "chave_secreta_fallback_dev")

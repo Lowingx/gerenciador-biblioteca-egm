@@ -5,7 +5,8 @@ alembic
 psycopg2-binary
 pydantic
 python-dotenv
-passlib[bcrypt]
+bcrypt
 python-jose[cryptography]
 python-multipart
 slowapi
+email-validator

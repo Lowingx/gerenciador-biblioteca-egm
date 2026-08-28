@@ -2,39 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes fluidWave {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  100% {
-    background-position: 200% 50%;
-  }
-}
-
-@keyframes fluidWave2 {
-  0% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.fluid-bg {
-  animation: fluidWave 28s linear infinite;
-}
-
-.fluid-bg2 {
-  animation: fluidWave2 38s linear infinite;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-input:focus {
-  outline: none;
+input:focus { outline: none; }
+
+html { scroll-behavior: smooth; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(107, 70, 192, 0.2);
+  border-radius: 3px;
 }
+::-webkit-scrollbar-thumb:hover { background: rgba(107, 70, 192, 0.4); }
