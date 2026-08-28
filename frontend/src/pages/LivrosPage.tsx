@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { api } from "../api";
 import type { Livro } from "../api";
 import { GradientText, StatusBadge, LoadingSpinner, MotionModal } from "../components/ui";
@@ -9,17 +9,35 @@ export default function LivrosPage() {
   const { user } = useAuth();
   const isAdmin = user?.is_admin;
   const [livros, setLivros] = useState<Livro[]>([]);
+  const [autores, setAutores] = useState<{ id: number; nome: string }[]>([]);
+  const [categorias, setCategorias] = useState<{ id: number; nome: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editLivro, setEditLivro] = useState<Livro | null>(null);
   const [form, setForm] = useState({ titulo: "", autor: "", editora: "", quantidade: 1 });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [filters, setFilters] = useState({ q: "", autor: "", categoria: "" });
 
-  const load = () => {
-    api.get<Livro[]>("/livros/").then(setLivros).catch(() => {}).finally(() => setLoading(false));
-  };
-  useEffect(load, []);
+  const load = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      if (filters.q) params.set("q", filters.q);
+      if (filters.autor) params.set("autor", filters.autor);
+      if (filters.categoria) params.set("categoria", filters.categoria);
+      const qs = params.toString();
+      const [l, a, c] = await Promise.all([
+        api.get<Livro[]>(`/livros/${qs ? `?${qs}` : ""}`),
+        api.get<{ id: number; nome: string }[]>("/autores/"),
+        api.get<{ id: number; nome: string }[]>("/categorias/"),
+      ]);
+      setLivros(l);
+      setAutores(a);
+      setCategorias(c);
+    } catch { /* ignore */ } finally { setLoading(false); }
+  }, [filters]);
+
+  useEffect(() => { load(); }, [load]);
 
   const openNew = () => { setEditLivro(null); setForm({ titulo: "", autor: "", editora: "", quantidade: 1 }); setShowModal(true); };
   const openEdit = (l: Livro) => { setEditLivro(l); setForm({ titulo: l.titulo, autor: l.autores?.[0]?.nome || "", editora: l.editora?.nome || "", quantidade: l.quantidade_total }); setShowModal(true); };
@@ -68,6 +86,35 @@ export default function LivrosPage() {
           {error && (
             <div className="clay-badge clay-badge-danger w-full justify-center py-3 text-sm">{error}</div>
           )}
+
+          {/* Filters */}
+          <FadeIn>
+            <div className="flex flex-wrap gap-3 mb-4">
+              <input
+                className="clay-input flex-1 min-w-[160px]"
+                placeholder="Buscar por título..."
+                value={filters.q}
+                onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+              />
+              <select
+                className="clay-input min-w-[140px]"
+                value={filters.autor}
+                onChange={(e) => setFilters({ ...filters, autor: e.target.value })}
+              >
+                <option value="">Todos os autores</option>
+                {autores.map((a) => <option key={a.id} value={a.nome}>{a.nome}</option>)}
+              </select>
+              <select
+                className="clay-input min-w-[140px]"
+                value={filters.categoria}
+                onChange={(e) => setFilters({ ...filters, categoria: e.target.value })}
+              >
+                <option value="">Todas as categorias</option>
+                {categorias.map((c) => <option key={c.id} value={c.nome}>{c.nome}</option>)}
+              </select>
+            </div>
+          </FadeIn>
+
           <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {livros.map((l) => (
             <StaggerItem key={l.id}>

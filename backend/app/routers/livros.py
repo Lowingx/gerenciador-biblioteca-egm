@@ -26,6 +26,9 @@ def _get_or_create(db: Session, model, nome: str):
 @router.get("/", response_model=list[LivroResponse])
 def lista_livros(
     q: str = Query(None, description="Busca por título"),
+    autor: str = Query(None, description="Busca por nome do autor"),
+    categoria: str = Query(None, description="Busca por nome da categoria"),
+    editora: str = Query(None, description="Busca por nome da editora"),
     db: Session = Depends(get_db),
     _: str = Depends(get_current_user),
 ):
@@ -36,6 +39,12 @@ def lista_livros(
     ).order_by(Livro.titulo)
     if q:
         stmt = stmt.where(Livro.titulo.ilike(f"%{q.strip()}%"))
+    if autor:
+        stmt = stmt.join(Livro.autores).where(Autor.nome.ilike(f"%{autor.strip()}%"))
+    if categoria:
+        stmt = stmt.join(Livro.categoria).where(Categoria.nome.ilike(f"%{categoria.strip()}%"))
+    if editora:
+        stmt = stmt.join(Livro.editora).where(Editora.nome.ilike(f"%{editora.strip()}%"))
     livros = db.execute(stmt).scalars().all()
     return livros
 
@@ -63,6 +72,11 @@ def criar_livro(
     db: Session = Depends(get_db),
     _: str = Depends(require_admin),
 ):
+    if livro.isbn:
+        existente = db.query(Livro).filter(Livro.isbn == livro.isbn).first()
+        if existente:
+            raise HTTPException(status_code=400, detail=f"ISBN '{livro.isbn}' já cadastrado no livro '{existente.titulo}'")
+
     categoria = None
     if livro.categoria_id:
         categoria = db.query(Categoria).filter(Categoria.id == livro.categoria_id).first()
@@ -102,6 +116,11 @@ def atualizar_livro(
     livro = db.query(Livro).filter(Livro.id == livro_id).first()
     if livro is None:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
+
+    if dados.isbn is not None and dados.isbn != livro.isbn:
+        existente = db.query(Livro).filter(Livro.isbn == dados.isbn, Livro.id != livro_id).first()
+        if existente:
+            raise HTTPException(status_code=400, detail=f"ISBN '{dados.isbn}' já cadastrado no livro '{existente.titulo}'")
 
     if dados.titulo is not None:
         livro.titulo = dados.titulo.strip()

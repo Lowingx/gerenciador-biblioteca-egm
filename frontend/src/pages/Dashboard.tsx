@@ -5,28 +5,39 @@ import type { Livro, Emprestimo } from "../api";
 import { GradientText, StatusBadge, LoadingSpinner } from "../components/ui";
 import { MotionCard, Stagger, StaggerItem, FadeIn } from "../motion";
 
+interface Estatisticas {
+  total_acervo: number;
+  disponiveis: number;
+  emprestados: number;
+  ativos_count: number;
+  atrasados_count: number;
+  multa_total: number;
+}
+
 export default function Dashboard() {
   const [livros, setLivros] = useState<Livro[]>([]);
   const [emprestimos, setEmprestimos] = useState<Emprestimo[]>([]);
+  const [stats, setStats] = useState<Estatisticas | null>(null);
   const [loading, setLoading] = useState(true);
   const nav = useNavigate();
 
   useEffect(() => {
-    Promise.all([api.get<Livro[]>("/livros/"), api.get<Emprestimo[]>("/emprestimos/")])
-      .then(([l, e]) => { setLivros(l); setEmprestimos(e); })
+    Promise.all([
+      api.get<Livro[]>("/livros/"),
+      api.get<Emprestimo[]>("/emprestimos/"),
+      api.get<Estatisticas>("/emprestimos/estatisticas"),
+    ])
+      .then(([l, e, s]) => { setLivros(l); setEmprestimos(e); setStats(s); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const totalAcervo = livros.reduce((a, b) => a + b.quantidade_total, 0);
-  const emprestados = emprestimos.filter((e) => e.status === "ativo").length;
-  const atrasados = emprestimos.filter((e) => e.status === "ativo" && e.multa && e.multa > 0).length;
-
-  const stats = [
-    { label: "Livros no acervo", value: totalAcervo, to: "/app/livros", icon: "📚", color: "bg-[var(--color-primary)]", border: "border-[#4338CA]" },
-    { label: "Empréstimos ativos", value: emprestados, to: "/app/emprestimos", icon: "📖", color: "bg-[var(--color-accent)]", border: "border-[#C2410C]" },
-    { label: "Em atraso", value: atrasados, to: "/app/emprestimos", icon: "⚠️", color: "bg-[var(--color-destructive)]", border: "border-[#991B1B]" },
-  ];
+  const cards = stats ? [
+    { label: "Livros no acervo", value: stats.total_acervo, to: "/app/livros", icon: "📚", color: "bg-[var(--color-primary)]", border: "border-[#4338CA]" },
+    { label: "Empréstimos ativos", value: stats.ativos_count, to: "/app/emprestimos", icon: "📖", color: "bg-[var(--color-accent)]", border: "border-[#C2410C]" },
+    { label: "Em atraso", value: stats.atrasados_count, to: "/app/emprestimos", icon: "⚠️", color: "bg-[var(--color-destructive)]", border: "border-[#991B1B]" },
+    { label: "Multa total", value: `R$ ${stats.multa_total.toFixed(2)}`, to: "/app/emprestimos", icon: "💰", color: "bg-amber-500", border: "border-amber-700" },
+  ] : [];
 
   return (
     <div className="space-y-8">
@@ -41,8 +52,8 @@ export default function Dashboard() {
         <LoadingSpinner />
       ) : (
         <>
-          <Stagger className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {stats.map((s) => (
+          <Stagger className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+            {cards.map((s) => (
               <StaggerItem key={s.label}>
                 <button onClick={() => nav(s.to)} className="text-left w-full">
                   <MotionCard className="p-6 cursor-pointer" hover>

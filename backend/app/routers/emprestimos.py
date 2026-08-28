@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, selectinload
+from sqlalchemy import func
 from datetime import datetime, timedelta, timezone
 
 from app.core.database import get_db
@@ -12,6 +13,8 @@ from app.schemas.emprestimo import EmprestimoCreate, EmprestimoResponse, Emprest
 router = APIRouter(prefix="/emprestimos", tags=["emprestimos"])
 
 DIAS_PADRAO = 14
+LIMITE_EMPRESTIMOS = 3
+VALOR_MULTA_DIA = 0.50
 
 
 def _to_response(e: Emprestimo) -> EmprestimoResponse:
@@ -61,6 +64,27 @@ def criar_emprestimo(
         usuario = db.query(Usuario).filter(Usuario.id == dados.usuario_id).first()
         if usuario is None:
             raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+    # PB-06c: Check user doesn't have unpaid fines
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    emprestimos_usuario = db.query(Emprestimo).filter(
+        Emprestimo.matricula == matricula,
+        Emprestimo.status == "ativo",
+    ).all()
+    multa_total = sum(e.multa_corrente for e in emprestimos_usuario)
+    if multa_total > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Usuário possui multa pendente de R${multa_total:.2f}.Quite as multas antes de realizar novo empréstimo.",
+        )
+
+    # Check loan limit
+    emprestimos_ativos = len(emprestimos_usuario)
+    if emprestimos_ativos >= LIMITE_EMPRESTIMOS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Limite de {LIMITE_EMPRESTIMOS} empréstimos simultâneos atingido.",
+        )
 
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     novo = Emprestimo(
@@ -124,3 +148,28 @@ def deletar_emprestimo(
     db.delete(e)
     db.commit()
     return None
+
+
+@router.get("/estatisticas")
+def estatisticas(
+    db: Session = Depends(get_db),
+    matricula: str = Depends(get_current_user),
+):
+    """Retorna estatísticas gerais para o dashboard."""
+    from app.models.livro import Livro
+    total_livros = db.query(func.coalesce(func.sum(Livro.quantidade_total), 0)).scalar()
+    total_disponivel = db.query(func.coalesce(func.sum(Livro.quantidade_disponivel), 0)).scalar()
+    emprestados = int(total_livros) - int(total_disponivel)
+
+    ativos = db.query(Emprestimo).filter(Emprestimo.status == "ativo").all()
+    atrasados = [e for e in ativos if e.em_atraso]
+    multa_total = sum(e.multa_corrente for e in ativos)
+
+    return {
+        "total_acervo": int(total_livros),
+        "disponiveis": int(total_disponivel),
+        "emprestados": emprestados,
+        "ativos_count": len(ativos),
+        "atrasados_count": len(atrasados),
+        "multa_total": round(multa_total, 2),
+    }
